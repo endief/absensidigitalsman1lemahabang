@@ -53,6 +53,46 @@ function initFirebaseListeners() {
 }
 initFirebaseListeners();
 
+// ==== KONFIGURASI GEOFENCING (Radius 100 meter) ====
+const KANTOR_LAT = -6.830273;
+const KANTOR_LON = 108.621138;
+const BATAS_JARAK_METER = 100;
+
+// Rumus Haversine untuk menghitung jarak akurat
+function hitungJarak(lat1, lon1, lat2, lon2) {
+    const R = 6371e3; // Radius bumi dalam meter
+    const dLat = (lat2 - lat1) * (Math.PI / 180);
+    const dLon = (lon2 - lon1) * (Math.PI / 180);
+    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+              Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) * Math.sin(dLon/2) * Math.sin(dLon/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c; // Hasil dalam meter
+}
+
+// Fungsi untuk mengecek lokasi saat tombol ditekan
+function verifikasiLokasi() {
+    return new Promise((resolve, reject) => {
+        if (!navigator.geolocation) {
+            reject("Browser HP Anda tidak mendukung fitur lokasi.");
+        }
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                const jarak = hitungJarak(position.coords.latitude, position.coords.longitude, KANTOR_LAT, KANTOR_LON);
+                if (jarak <= BATAS_JARAK_METER) {
+                    resolve(jarak);
+                } else {
+                    reject(`Anda berada di luar area absen! Jarak Anda ${Math.round(jarak)} meter dari sekolah.`);
+                }
+            },
+            (error) => {
+                reject("Gagal mendapatkan lokasi. Pastikan GPS menyala dan izin lokasi diberikan ke website ini.");
+            },
+            { enableHighAccuracy: true, timeout: 10000 } // Paksa cari GPS akurat selama maks 10 detik
+        );
+    });
+}
+
+
 function refreshActiveUI() {
     const dashboardAdmin = document.getElementById('panel-dashboard-admin');
     const dashboardKelas = document.getElementById('panel-dashboard-kelas');
@@ -690,6 +730,27 @@ async function kirimAbsen() {
 
     if (!kelas || !hari || !nama || !status) return Swal.fire({ title: 'Gagal', text: 'Isi semua data.', icon: 'warning', timer: 2500, timerProgressBar: true, showConfirmButton: false });
 
+    // --- TAMBAHAN FITUR GEOFENCING MULAI DI SINI ---
+    // (Lokasi hanya dicek jika siswa memilih HADIR)
+    if (status === 'Hadir') {
+        Swal.fire({ 
+            title: 'Mengecek Lokasi...', 
+            text: 'Mohon tunggu, memastikan Anda berada di area sekolah.', 
+            allowOutsideClick: false, 
+            didOpen: () => { Swal.showLoading(); } 
+        });
+
+        try {
+            const jarak = await verifikasiLokasi();
+            // Jika lokasi valid (<= 100m), tutup loading SweetAlert
+            Swal.close(); 
+        } catch (pesanError) {
+            // Jika lokasi > 100m atau GPS mati, hentikan proses dan tampilkan peringatan
+            return Swal.fire({ title: 'Gagal Absen', text: pesanError, icon: 'error' });
+        }
+    }
+    // --- TAMBAHAN FITUR GEOFENCING SELESAI ---
+
     let fotoSimpan = "";
     let keterangan = "-";
 
@@ -752,6 +813,7 @@ async function kirimAbsen() {
             matikanKamera();
         });
 }
+
 
 async function hapusFileDariSupabase(filePath) {
     if (!filePath) return;
