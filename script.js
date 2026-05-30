@@ -24,7 +24,7 @@ firebase.database().ref('siswa').on('value', (snapshot) => {
 
 let dbAbsensi = [];
 let streamKamera = null;
-let currentUser = null; // { role: 'admin' } atau { role: 'admin_kelas', username, kelas }
+let currentUser = null; 
 
 // ==== LISTENER REAL‑TIME FIREBASE ====
 function initFirebaseListeners() {
@@ -73,7 +73,7 @@ function hitungJarak(lat1, lon1, lat2, lon2) {
 function verifikasiLokasi() {
     return new Promise((resolve, reject) => {
         if (!navigator.geolocation) {
-            reject("Izinkan aktifkan lokasi.");
+            reject("Browser HP Anda tidak mendukung fitur lokasi.");
         }
         navigator.geolocation.getCurrentPosition(
             (position) => {
@@ -81,11 +81,11 @@ function verifikasiLokasi() {
                 if (jarak <= BATAS_JARAK_METER) {
                     resolve(jarak);
                 } else {
-                    reject(`Tidak bisa absen! Siswa diluar ${Math.round(jarak)} meter dari sekolah.`);
+                    reject(`Anda berada di luar area absen! Jarak Anda ${Math.round(jarak)} meter dari sekolah.`);
                 }
             },
             (error) => {
-                reject("Harap izin lokasi diberikan ke website ini.");
+                reject("Gagal mendapatkan lokasi. Pastikan GPS menyala dan izin lokasi diberikan ke website ini.");
             },
             { enableHighAccuracy: true, timeout: 10000 } // Paksa cari GPS akurat selama maks 10 detik
         );
@@ -499,7 +499,7 @@ function renderTabelKehadiran() {
         return;
     }
     hasilAkhir.forEach(item => {
-        let badgeClass = item.status === 'Hadir' ? 'badge-hadir' : (item.status === 'Izin' ? 'badge-izin' : 'badge-belum');
+        let badgeClass = item.status === 'Hadir' ? 'badge-hadir' : 'badge-belum';
         let btnFoto = item.foto ? `<button class="btn-small btn-foto-small" onclick="lihatFotoPreview('${item.foto}')">Lihat</button>` : '-';
         let infoKet = item.keterangan !== "-" ? `<div style="font-size:12px; color:#666; margin-top:5px; font-weight:500;">${item.keterangan}</div>` : '';
         tbody.innerHTML += `
@@ -547,7 +547,7 @@ function renderTabelKehadiranKelas() {
     });
     tbody.innerHTML = "";
     hasilAkhir.forEach(item => {
-        let badgeClass = item.status === 'Hadir' ? 'badge-hadir' : (item.status === 'Izin' ? 'badge-izin' : 'badge-belum');
+        let badgeClass = item.status === 'Hadir' ? 'badge-hadir' : 'badge-belum';
         let btnFoto = item.foto ? `<button class="btn-small btn-foto-small" onclick="lihatFotoPreview('${item.foto}')">Lihat</button>` : '-';
         let infoKet = item.keterangan !== "-" ? `<div style="font-size:12px; color:#666; margin-top:5px; font-weight:500;">${item.keterangan}</div>` : '';
         tbody.innerHTML += `
@@ -645,24 +645,7 @@ function filterNama() {
     renderNama(document.getElementById('search-nama').value);
 }
 
-// ==== KAMERA & STATUS ====
-function ubahStatus(status) {
-    document.getElementById('label-hadir').classList.remove('active-hadir');
-    document.getElementById('label-izin').classList.remove('active-izin');
-    document.getElementById('area-dinamis').classList.remove('hidden');
-    if (status === 'Hadir') {
-        document.getElementById('label-hadir').classList.add('active-hadir');
-        document.getElementById('area-izin').classList.add('hidden');
-        document.getElementById('area-kamera').classList.remove('hidden');
-        mulaiKamera();
-    } else {
-        document.getElementById('label-izin').classList.add('active-izin');
-        document.getElementById('area-kamera').classList.add('hidden');
-        document.getElementById('area-izin').classList.remove('hidden');
-        matikanKamera();
-    }
-}
-
+// ==== KAMERA ====
 async function mulaiKamera() {
     try {
         streamKamera = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
@@ -711,59 +694,44 @@ function dataURLtoBlob(dataurl) {
     return new Blob([u8arr], { type: mime });
 }
 
-async function getBase64(file) {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = error => reject(error);
-    });
-}
-
-// ==== KIRIM ABSEN ====
+// ==== KIRIM ABSEN (VERSI GEOFENCING) ====
 async function kirimAbsen() {
     const kelas = document.getElementById('kelas').value;
     const hari = document.getElementById('hari').value;
     const nama = document.getElementById('nama-terpilih').value;
-    const statusEl = document.querySelector('input[name="status"]:checked');
-    const status = statusEl ? statusEl.value : null;
+    
+    // Status kini langsung otomatis 'Hadir'
+    const status = 'Hadir'; 
+    const keterangan = "-";
 
-    if (!kelas || !hari || !nama || !status) return Swal.fire({ title: 'Gagal', text: 'Isi semua data.', icon: 'warning', timer: 2500, timerProgressBar: true, showConfirmButton: false });
+    if (!kelas || !hari || !nama) return Swal.fire({ title: 'Gagal', text: 'Isi semua data.', icon: 'warning', timer: 2500, timerProgressBar: true, showConfirmButton: false });
 
-    // --- TAMBAHAN FITUR GEOFENCING MULAI DI SINI ---
-    // (Lokasi hanya dicek jika siswa memilih HADIR)
-    if (status === 'Hadir') {
-        Swal.fire({ 
-            title: 'Mengecek Lokasi...', 
-            text: 'Mohon tunggu, memastikan Anda berada di area sekolah.', 
-            allowOutsideClick: false, 
-            didOpen: () => { Swal.showLoading(); } 
-        });
+    // === Cek Lokasi (Geofencing) ===
+    Swal.fire({
+        title: 'Mengecek Lokasi...',
+        text: 'Mohon tunggu, memastikan Anda berada di area sekolah.',
+        allowOutsideClick: false,
+        didOpen: () => { Swal.showLoading(); }
+    });
 
-        try {
-            const jarak = await verifikasiLokasi();
-            // Jika lokasi valid (<= 100m), tutup loading SweetAlert
-            Swal.close(); 
-        } catch (pesanError) {
-            // Jika lokasi > 100m atau GPS mati, hentikan proses dan tampilkan peringatan
-            return Swal.fire({ title: 'Gagal Absen', text: pesanError, icon: 'error' });
-        }
+    try {
+        const jarak = await verifikasiLokasi();
+        Swal.close(); 
+    } catch (pesanError) {
+        return Swal.fire({ title: 'Gagal Absen', text: pesanError, icon: 'error' });
     }
-    // --- TAMBAHAN FITUR GEOFENCING SELESAI ---
+    // ===============================
 
-    let fotoSimpan = "";
-    let keterangan = "-";
+    let fotoSimpan = document.getElementById('foto-data').value;
+    if (!fotoSimpan) return Swal.fire({ title: 'Bukti Diperlukan', text: 'Ambil foto terlebih dahulu.', icon: 'warning', timer: 2500, timerProgressBar: true, showConfirmButton: false });
 
-    if (status === 'Hadir') {
-        fotoSimpan = document.getElementById('foto-data').value;
-        if (!fotoSimpan) return Swal.fire({ title: 'Bukti Diperlukan', text: 'Ambil Foto.', icon: 'warning', timer: 2500, timerProgressBar: true, showConfirmButton: false });
-    } else if (status === 'Izin') {
-        keterangan = document.getElementById('keterangan-izin').value.trim();
-        const fileSurat = document.getElementById('surat-izin').files;
-        if (keterangan.length < 5) return Swal.fire({ title: 'Ditolak', text: 'Isi alasan terlebih dahulu', icon: 'warning', timer: 2500, timerProgressBar: true, showConfirmButton: false });
-        if (fileSurat.length === 0) return Swal.fire({ title: 'Surat Diperlukan', text: 'Unggah foto bukti surat izin.', icon: 'warning', timer: 2500, timerProgressBar: true, showConfirmButton: false });
-        fotoSimpan = await getBase64(fileSurat[0]);
-    }
+    // Loading saat upload foto ke Supabase
+    Swal.fire({
+        title: 'Mengirim Data...',
+        text: 'Mohon tunggu sebentar',
+        allowOutsideClick: false,
+        didOpen: () => { Swal.showLoading(); }
+    });
 
     const timeNow = new Date();
     const uniqueId = "ID_" + timeNow.getTime() + "_" + Math.random().toString(36).substr(2, 5);
@@ -805,15 +773,12 @@ async function kirimAbsen() {
         .then(() => {
             document.getElementById('nama-terpilih').value = "";
             document.getElementById('search-nama').value = "";
-            document.querySelector('input[name="status"]:checked').checked = false;
-            document.getElementById('area-dinamis').classList.add('hidden');
-            document.getElementById('label-hadir').classList.remove('active-hadir');
-            document.getElementById('label-izin').classList.remove('active-izin');
-            document.getElementById('surat-izin').value = "";
+            document.getElementById('foto-data').value = "";
+            retakePhoto();
             matikanKamera();
+            switchPanel('panel-awal');
         });
 }
-
 
 async function hapusFileDariSupabase(filePath) {
     if (!filePath) return;
@@ -851,6 +816,8 @@ function switchPanel(panelId, isAdminPanel = false) {
     }
 
     if (panelId === 'panel-awal') matikanKamera();
+    // Nyalakan kamera otomatis saat panel siswa dibuka karena izin sudah tidak ada
+    if (panelId === 'panel-absen') mulaiKamera();
 }
 
 function openModal(id) {
@@ -866,5 +833,5 @@ if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('sw.js');
 }
 
-// Inisialisasi tampilan
+// Inisialisasi tampilan awal
 renderNama();
