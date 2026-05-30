@@ -54,8 +54,8 @@ function initFirebaseListeners() {
 initFirebaseListeners();
 
 // ==== KONFIGURASI GEOFENCING (Radius 100 meter) ====
-const KANTOR_LAT = -6.830273;
-const KANTOR_LON = 108.621138;
+const KANTOR_LAT = -6.818837;
+const KANTOR_LON = 108.629478;
 const BATAS_JARAK_METER = 100;
 
 // Rumus Haversine untuk menghitung jarak akurat
