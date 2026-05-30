@@ -5,30 +5,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Absensi Digital</title>
 
-    <!-- Library Eksternal -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
-    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-    <!-- PWA -->
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#0ea5e9">
 
-    <!-- CSS -->
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="glow-bg"></div>
 
     <div class="app-container" id="main-container">
-        <!-- Panel Awal -->
         <div id="panel-awal" class="panel active">
             <img src="https://raw.githubusercontent.com/endief/absensidigitalsman1lemahabang/250eb3dfec1bcefa494e569e92f74699f4fba057/SMANSALA.png" 
                  alt="Logo SMAN 1 Lemahabang" 
@@ -45,7 +40,6 @@
             <button class="btn-secondary" onclick="switchPanel('panel-pengelola')">Pengelola</button>
         </div>
 
-        <!-- Panel Login -->
         <div id="panel-pengelola" class="panel">
             <h2 class="panel-title">Akses Masuk Pengelola</h2>
             <p class="form-desc">Masukkan Username dan Password</p>
@@ -61,7 +55,6 @@
             <button class="btn-text" onclick="switchPanel('panel-awal')">KEMBALI</button>
         </div>
 
-        <!-- Dashboard Admin Utama -->
         <div id="panel-dashboard-admin" class="panel">
             <h2 class="panel-title">Absensi Digital</h2>
             <p style="color: var(--neon-cyan); font-weight: 700; margin-bottom: 25px; text-align: center;">SMAN 1 LEMAHABANG</p>
@@ -87,7 +80,6 @@
             <button class="btn-secondary" onclick="logoutUmum()">Keluar</button>
         </div>
 
-        <!-- Dashboard Admin Perkelas -->
         <div id="panel-dashboard-kelas" class="panel">
             <h2 class="panel-title">Absensi Digital</h2>
             <p id="admin-kelas-display" style="color: var(--neon-cyan); font-weight: 700; margin-bottom: 15px; text-align: center;"></p>
@@ -109,7 +101,6 @@
             <button class="btn-secondary" onclick="logoutUmum()">Keluar</button>
         </div>
 
-        <!-- Panel Absen Siswa -->
         <div id="panel-absen" class="panel">
             <img src="https://raw.githubusercontent.com/endief/absensidigitalsman1lemahabang/250eb3dfec1bcefa494e569e92f74699f4fba057/SMANSALA.png" 
                  alt="Logo SMAN 1 Lemahabang" 
@@ -138,19 +129,9 @@
                 <div id="list-nama" class="name-list"></div>
                 <input type="hidden" id="nama-terpilih" value="">
             </div>
-            <div class="form-group">
-                <label>Status Kehadiran</label>
-                <div class="radio-group">
-                    <label class="radio-btn" id="label-hadir">
-                        <input type="radio" name="status" value="Hadir" onchange="ubahStatus('Hadir')"> HADIR
-                    </label>
-                    <label class="radio-btn" id="label-izin">
-                        <input type="radio" name="status" value="Izin" onchange="ubahStatus('Izin')"> IZIN
-                    </label>
-                </div>
-            </div>
-            <div id="area-dinamis" class="hidden">
-                <div id="area-kamera" class="hidden">
+            
+            <div id="area-dinamis">
+                <div id="area-kamera">
                     <label>Bukti Hadir</label>
                     <div class="camera-wrapper">
                         <video id="video-kamera" autoplay playsinline></video>
@@ -160,12 +141,6 @@
                     <button class="btn-secondary hidden" id="btn-retake" onclick="retakePhoto()" style="margin-bottom: 0;">Ulang?</button>
                     <input type="hidden" id="foto-data" value="">
                 </div>
-                <div id="area-izin" class="hidden">
-                    <label>Keterangan</label>
-                    <textarea id="keterangan-izin" class="input-field" rows="3" placeholder="Alasan..."></textarea>
-                    <label style="margin-top: 20px;">Unggah Surat Bukti (Max 2MB)</label>
-                    <input type="file" id="surat-izin" accept="image/*" class="input-field">
-                </div>
             </div>
             <br>
             <button class="btn-primary" onclick="kirimAbsen()" style="margin-top: 10px;">KIRIM</button>
@@ -173,8 +148,6 @@
         </div>
     </div>
 
-    <!-- Semua Modal tetap di sini (tidak berubah) -->
-    <!-- Modal pilih kelas (siswa) -->
     <div id="modal-kelas" class="modal-overlay" onclick="closeModal('modal-kelas')">
         <div class="modal-content" onclick="event.stopPropagation()">
             <div class="modal-header"><h3>Pilih Kelas</h3><button class="close-btn" onclick="closeModal('modal-kelas')">✕</button></div>
@@ -182,7 +155,6 @@
         </div>
     </div>
 
-    <!-- Modal pilih hari (siswa) -->
     <div id="modal-hari" class="modal-overlay" onclick="closeModal('modal-hari')">
         <div class="modal-content" onclick="event.stopPropagation()">
             <div class="modal-header"><h3>Pilih Hari</h3><button class="close-btn" onclick="closeModal('modal-hari')">✕</button></div>
@@ -196,7 +168,6 @@
         </div>
     </div>
 
-    <!-- Modal Rekap Kehadiran (Developer) -->
     <div id="modal-kehadiran" class="modal-overlay" onclick="closeModal('modal-kehadiran')">
         <div class="modal-content" onclick="event.stopPropagation()" style="max-width: 800px; height: 95vh; display: flex; flex-direction: column; padding: 25px 20px;">
             <div class="modal-header" style="margin-bottom: 15px;"><h3 style="font-size: 18px;">Rekap Kehadiran</h3><button class="close-btn" onclick="closeModal('modal-kehadiran')">✕</button></div>
@@ -229,14 +200,12 @@
         </div>
     </div>
 
-    <!-- Modal pilih kelas (developer) -->
     <div id="modal-admin-kelas" class="modal-overlay" style="z-index: 1050;" onclick="closeModal('modal-admin-kelas')">
         <div class="modal-content" onclick="event.stopPropagation()"><div class="modal-header"><h3>Pilih Kelas</h3><button class="close-btn" onclick="closeModal('modal-admin-kelas')">✕</button></div>
             <div id="list-admin-kelas-container"></div>
         </div>
     </div>
 
-    <!-- Modal pilih hari (developer) -->
     <div id="modal-admin-hari" class="modal-overlay" style="z-index: 1050;" onclick="closeModal('modal-admin-hari')">
         <div class="modal-content" onclick="event.stopPropagation()"><div class="modal-header"><h3>Pilih Hari</h3><button class="close-btn" onclick="closeModal('modal-admin-hari')">✕</button></div>
             <div>
@@ -249,19 +218,16 @@
         </div>
     </div>
 
-    <!-- Modal pilih status (developer) -->
     <div id="modal-admin-status" class="modal-overlay" style="z-index: 1050;" onclick="closeModal('modal-admin-status')">
         <div class="modal-content" onclick="event.stopPropagation()"><div class="modal-header"><h3>Pilih Status</h3><button class="close-btn" onclick="closeModal('modal-admin-status')">✕</button></div>
             <div>
                 <div class="modal-item" onclick="pilihAdminStatus('Semua')">Semua</div>
                 <div class="modal-item" onclick="pilihAdminStatus('Hadir')">Hadir</div>
-                <div class="modal-item" onclick="pilihAdminStatus('Izin')">Izin</div>
                 <div class="modal-item" onclick="pilihAdminStatus('Belum Absen')">Belum Absen</div>
             </div>
         </div>
     </div>
 
-    <!-- Modal Rekap Kehadiran (Admin Kelas) -->
     <div id="modal-kehadiran-kelas" class="modal-overlay" onclick="closeModal('modal-kehadiran-kelas')">
         <div class="modal-content" onclick="event.stopPropagation()" style="max-width: 800px; height: 95vh; display: flex; flex-direction: column; padding: 25px 20px;">
             <div class="modal-header" style="margin-bottom: 15px;"><h3 style="font-size: 18px;">Rekap Kehadiran</h3><button class="close-btn" onclick="closeModal('modal-kehadiran-kelas')">✕</button></div>
@@ -282,7 +248,6 @@
         </div>
     </div>
 
-    <!-- Modal pilih hari (admin kelas) -->
     <div id="modal-kelas-hari" class="modal-overlay" style="z-index: 1050;" onclick="closeModal('modal-kelas-hari')">
         <div class="modal-content" onclick="event.stopPropagation()"><div class="modal-header"><h3>Pilih Hari</h3><button class="close-btn" onclick="closeModal('modal-kelas-hari')">✕</button></div>
             <div>
@@ -295,7 +260,6 @@
         </div>
     </div>
 
-    <!-- Modal Kelola Admin Kelas (Developer) -->
     <div id="modal-kelola-admin" class="modal-overlay" onclick="closeModal('modal-kelola-admin')">
         <div class="modal-content" onclick="event.stopPropagation()">
             <div class="modal-header"><h3>Kelola Admin Perkelas</h3><button class="close-btn" onclick="closeModal('modal-kelola-admin')">✕</button></div>
@@ -320,7 +284,6 @@
         </div>
     </div>
 
-    <!-- Modal pilih kelas untuk form tambah admin perkelas -->
     <div id="modal-admin-kelas-pilih" class="modal-overlay" style="z-index: 1100;" onclick="closeModal('modal-admin-kelas-pilih')">
         <div class="modal-content" onclick="event.stopPropagation()">
             <div class="modal-header">
@@ -331,14 +294,12 @@
         </div>
     </div>
 
-    <!-- Modal Preview Foto -->
     <div id="modal-preview-foto" class="modal-overlay modal-center" style="z-index: 1100;" onclick="closeModal('modal-preview-foto')">
         <div class="modal-content" onclick="event.stopPropagation()"><div class="modal-header" style="margin-bottom: 15px;"><h3>Lihat Bukti</h3><button class="close-btn" onclick="closeModal('modal-preview-foto')">✕</button></div>
             <img id="preview-image-src" src="" alt="Bukti Foto" style="width: 100%; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.1);">
         </div>
     </div>
 
-    <!-- JavaScript -->
     <script src="script.js"></script>
 </body>
 </html>
