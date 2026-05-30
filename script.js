@@ -1,12 +1,12 @@
 // ==== KONFIGURASI FIREBASE ====
 const firebaseConfig = {
-    apiKey: "AIzaSyA_NfvZGXjqPKZ7QvUujP-5t0-CKbwwuhM",
-    authDomain: "absensi-kir-sman-1-lemahabang.firebaseapp.com",
-    databaseURL: "https://absensi-kir-sman-1-lemahabang-default-rtdb.asia-southeast1.firebasedatabase.app",
-    projectId: "absensi-kir-sman-1-lemahabang",
-    storageBucket: "absensi-kir-sman-1-lemahabang.firebasestorage.app",
-    messagingSenderId: "434762674944",
-    appId: "1:434762674944:web:1760788b3f67ff9646f9e5"
+    apiKey: "AIzaSyAIKGbTo0VPDP52YXzBcbC6BvPjT_KUv9M",
+    authDomain: "absensidigitalsman1lemahabang.firebaseapp.com",
+    databaseURL: "https://absensidigitalsman1lemahabang-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "absensidigitalsman1lemahabang",
+    storageBucket: "absensidigitalsman1lemahabang.firebasestorage.app",
+    messagingSenderId: "1065589111243",
+    appId: "1:1065589111243:web:13fe164a39353f09ac9e4e"
 };
 firebase.initializeApp(firebaseConfig);
 
