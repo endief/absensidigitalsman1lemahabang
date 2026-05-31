@@ -73,7 +73,7 @@ function hitungJarak(lat1, lon1, lat2, lon2) {
 function verifikasiLokasi() {
     return new Promise((resolve, reject) => {
         if (!navigator.geolocation) {
-            reject("Browser HP Anda tidak mendukung fitur lokasi.");
+            reject("Browser tidak mendukung fitur lokasi.");
         }
         navigator.geolocation.getCurrentPosition(
             (position) => {
@@ -81,11 +81,11 @@ function verifikasiLokasi() {
                 if (jarak <= BATAS_JARAK_METER) {
                     resolve(jarak);
                 } else {
-                    reject(`Anda berada di luar area absen! Jarak Anda ${Math.round(jarak)} meter dari sekolah.`);
+                    reject(`Tidak bisa absen! Siswa dikuar ${Math.round(jarak)} meter dari sekolah.`);
                 }
             },
             (error) => {
-                reject("Gagal mendapatkan lokasi. Pastikan GPS menyala dan izin lokasi diberikan ke website ini.");
+                reject("Pastikan izin lokasi diberikan ke website ini.");
             },
             { enableHighAccuracy: true, timeout: 10000 } // Paksa cari GPS akurat selama maks 10 detik
         );
