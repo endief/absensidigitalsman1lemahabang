@@ -15,6 +15,13 @@ const supabaseUrl = 'https://hwljckozqobryksiliip.supabase.co';
 const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh3bGpja296cW9icnlrc2lsaWlwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzczMjIyMTQsImV4cCI6MjA5Mjg5ODIxNH0.HnUA_iF-OP38YjqK4laPLbpkbfDTiVuG189vJoIprn0';
 const supabaseClient = supabase.createClient(supabaseUrl, supabaseAnonKey);
 
+// ==== FUNGSI PEMBERSIH NAMA UNTUK FIREBASE ====
+// Firebase akan menolak struktur data jika ada tanda titik (.), (#), dll. (Misal: "M. Nabil")
+function sanitizeKey(nama) {
+    if(!nama) return "unknown";
+    return nama.replace(/[.#$\[\]]/g, '_'); 
+}
+
 // ==== DATA SISWA PER KELAS ====
 let daftarNamaPerKelas = {};
 firebase.database().ref('siswa').on('value', (snapshot) => {
@@ -23,20 +30,18 @@ firebase.database().ref('siswa').on('value', (snapshot) => {
 });
 
 let dbAbsensi = [];
-let dbRekapBulanan = { kelas: {}, siswa: {} }; // DATA REKAP PERSISTEN
+let dbRekapBulanan = { kelas: {}, siswa: {} }; 
 let streamKamera = null;
 let currentUser = null; 
 
 // ==== LISTENER REAL‑TIME FIREBASE ====
 function initFirebaseListeners() {
-    // 1. Listener Data Absensi Harian
     firebase.database().ref('absensi').on('value', (snapshot) => {
         const val = snapshot.val();
         dbAbsensi = val ? Object.keys(val).map(key => ({ id: key, ...val[key] })) : [];
         refreshActiveUI();
     });
 
-    // 2. Listener Data Rekap Bulanan (Aman dari reset harian)
     firebase.database().ref('rekap_bulanan').on('value', (snapshot) => {
         const val = snapshot.val() || { kelas: {}, siswa: {} };
         dbRekapBulanan.kelas = val.kelas || {};
@@ -44,7 +49,6 @@ function initFirebaseListeners() {
         refreshActiveUI();
     });
 
-    // 3. Listener Status Absen (Buka/Tutup)
     firebase.database().ref('settings/status_absen').on('value', (snapshot) => {
         const status = snapshot.val();
         const absenPanel = document.getElementById('panel-absen');
@@ -65,9 +69,9 @@ function initFirebaseListeners() {
 initFirebaseListeners();
 
 // ==== KONFIGURASI GEOFENCING ====
-const KANTOR_LAT = -6.818772;
-const KANTOR_LON = 108.629543;
-const BATAS_JARAK_METER = 10000;
+const KANTOR_LAT = -6.818837;
+const KANTOR_LON = 108.629478;
+const BATAS_JARAK_METER = 100;
 
 function hitungJarak(lat1, lon1, lat2, lon2) {
     const R = 6371e3;
@@ -113,7 +117,6 @@ function refreshActiveUI() {
     if (modalKehadiran.classList.contains('show')) renderTabelKehadiran();
     if (modalKehadiranKelas.classList.contains('show')) renderTabelKehadiranKelas();
     
-    // Auto update rank modals jika terbuka
     if (modalRankKelas.classList.contains('show')) renderPeringkatKelas();
     if (modalRankSiswa.classList.contains('show')) renderPeringkatSiswa();
     if (modalRankSiswaKls.classList.contains('show')) renderPeringkatSiswaKelas();
@@ -254,11 +257,12 @@ async function hapusDataIndividu(id) {
     const data = snap.val();
     Swal.fire({ title: 'Hapus?', text: "Data absensi ini akan dihapus.", icon: 'warning', showCancelButton: true, confirmButtonColor: '#ef4444', confirmButtonText: 'Ya' }).then(async (result) => {
         if (result.isConfirmed) {
-            // Jika yang dihapus adalah "Tidak Hadir", perbaiki juga hitungan di rekap bulanan
+            // Perbaikan: gunakan sanitizeKey agar saat menghapus Alpha, Rekap Bulanan ikut terpotong dengan benar
             if (data && data.status === 'Tidak Hadir') {
-                let currentSiswa = dbRekapBulanan.siswa[data.kelas]?.[data.nama] || 0;
+                const safeNama = sanitizeKey(data.nama); 
+                let currentSiswa = dbRekapBulanan.siswa[data.kelas]?.[safeNama] || 0;
                 let currentKelas = dbRekapBulanan.kelas[data.kelas] || 0;
-                if(currentSiswa > 0) firebase.database().ref(`rekap_bulanan/siswa/${data.kelas}/${data.nama}`).set(currentSiswa - 1);
+                if(currentSiswa > 0) firebase.database().ref(`rekap_bulanan/siswa/${data.kelas}/${safeNama}`).set(currentSiswa - 1);
                 if(currentKelas > 0) firebase.database().ref(`rekap_bulanan/kelas/${data.kelas}`).set(currentKelas - 1);
             }
 
@@ -289,7 +293,7 @@ async function resetSemuaData() {
     });
 }
 
-// FUNGSI BARU: RESET REKAP BULANAN
+// RESET REKAP BULANAN
 async function resetRekapBulanan() {
     Swal.fire({
         title: 'Reset Rekap Bulanan?',
@@ -324,11 +328,9 @@ async function toggleStatusAbsensi() {
     const isClosed = snapshot.val() === 'ditutup';
     
     if (isClosed) {
-        // BUKA ABSENSI
         await ref.set('dibuka');
         Swal.fire({ title: 'Absensi Dibuka', text: 'Siswa dapat melakukan absen kembali.', icon: 'success', timer: 3000, timerProgressBar: true, showConfirmButton: false });
     } else {
-        // TAMPILKAN POP-UP KEREN UNTUK PILIH HARI
         openModal('modal-tutup-absen-hari');
     }
     updateTeksTombolBukaTutup();
@@ -336,46 +338,52 @@ async function toggleStatusAbsensi() {
 
 async function prosesTutupAbsensi(hariDitutup) {
     closeModal('modal-tutup-absen-hari');
-    
     Swal.fire({ title: 'Memproses...', text: 'Merekap siswa yang tidak hadir ke Data Bulanan...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
     
-    let updates = {};
-    const timeNow = new Date();
-    const waktuStr = timeNow.toLocaleString('id-ID');
-    
-    // Copy data rekap bulanan sementara agar bisa ditambah langsung
-    let tempSiswa = JSON.parse(JSON.stringify(dbRekapBulanan.siswa || {}));
-    let tempKelas = JSON.parse(JSON.stringify(dbRekapBulanan.kelas || {}));
-    
-    for (let kls in daftarNamaPerKelas) {
-        if (!tempSiswa[kls]) tempSiswa[kls] = {};
-        if (!tempKelas[kls]) tempKelas[kls] = 0;
+    try {
+        let updates = {};
+        const timeNow = new Date();
+        const waktuStr = timeNow.toLocaleString('id-ID');
+        
+        let tempSiswa = JSON.parse(JSON.stringify(dbRekapBulanan.siswa || {}));
+        let tempKelas = JSON.parse(JSON.stringify(dbRekapBulanan.kelas || {}));
+        
+        for (let kls in daftarNamaPerKelas) {
+            // Pengaman memastikan datanya bentuk Array (nama-nama siswa)
+            if(!Array.isArray(daftarNamaPerKelas[kls])) continue;
 
-        daftarNamaPerKelas[kls].forEach(nama => {
-            // Cek jika belum absen
-            let hasAbsen = dbAbsensi.find(a => a.kelas === kls && a.nama === nama && a.hari === hariDitutup);
-            if (!hasAbsen) {
-                // 1. Buatkan record 'Tidak Hadir' di absen harian
-                const uniqueId = "ID_" + timeNow.getTime() + "_" + Math.random().toString(36).substr(2, 5);
-                updates['absensi/' + uniqueId] = {
-                    kelas: kls, hari: hariDitutup, nama: nama, status: 'Tidak Hadir', keterangan: 'Ditutup Sistem (Alpha)', foto: '', filePath: '', waktuStr: waktuStr, lockKey: `absen_${kls}_${nama}_${hariDitutup}`
-                };
+            if (!tempSiswa[kls]) tempSiswa[kls] = {};
+            if (!tempKelas[kls]) tempKelas[kls] = 0;
 
-                // 2. Tambahkan poin Alpha di Data Rekap Bulanan
-                tempSiswa[kls][nama] = (tempSiswa[kls][nama] || 0) + 1;
-                tempKelas[kls]++;
-            }
-        });
+            daftarNamaPerKelas[kls].forEach(nama => {
+                let hasAbsen = dbAbsensi.find(a => a.kelas === kls && a.nama === nama && a.hari === hariDitutup);
+                if (!hasAbsen) {
+                    const uniqueId = "ID_" + timeNow.getTime() + "_" + Math.random().toString(36).substr(2, 5);
+                    updates['absensi/' + uniqueId] = {
+                        kelas: kls, hari: hariDitutup, nama: nama, status: 'Tidak Hadir', keterangan: 'Ditutup Sistem (Alpha)', foto: '', filePath: '', waktuStr: waktuStr, lockKey: `absen_${kls}_${nama}_${hariDitutup}`
+                    };
+
+                    const safeNama = sanitizeKey(nama); // Mengubah tanda . atau # di nama menjadi _
+                    tempSiswa[kls][safeNama] = (tempSiswa[kls][safeNama] || 0) + 1;
+                    tempKelas[kls]++;
+                }
+            });
+        }
+        
+        updates['rekap_bulanan/siswa'] = tempSiswa;
+        updates['rekap_bulanan/kelas'] = tempKelas;
+
+        // PUSH data ke Firebase
+        await firebase.database().ref().update(updates);
+        await firebase.database().ref('settings/status_absen').set('ditutup');
+        
+        updateTeksTombolBukaTutup();
+        Swal.fire({ title: 'Absensi Ditutup', text: `Siswa yang belum absen hari ${hariDitutup} otomatis Alpha. Data Rekap Bulanan telah terupdate.`, icon: 'success', timer: 4500, timerProgressBar: true, showConfirmButton: false });
+
+    } catch (error) {
+        console.error("Error Tutup Absen:", error);
+        Swal.fire({ title: 'Terjadi Kesalahan', text: 'Gagal merekap data absensi. Error di jaringan atau Database.', icon: 'error' });
     }
-    
-    updates['rekap_bulanan/siswa'] = tempSiswa;
-    updates['rekap_bulanan/kelas'] = tempKelas;
-
-    await firebase.database().ref().update(updates);
-    await firebase.database().ref('settings/status_absen').set('ditutup');
-    
-    updateTeksTombolBukaTutup();
-    Swal.fire({ title: 'Absensi Ditutup', text: `Siswa yang belum absen hari ${hariDitutup} otomatis Alpha. Data Rekap Bulanan telah terupdate.`, icon: 'warning', timer: 4500, timerProgressBar: true, showConfirmButton: false });
 }
 
 async function updateTeksTombolBukaTutup() {
@@ -544,7 +552,7 @@ function renderTabelKehadiranKelas() {
     });
 }
 
-// ==== FITUR PERINGKAT/REKAP BULANAN (OWNER/DEVELOPER) ====
+// ==== FITUR PERINGKAT/REKAP BULANAN ====
 function bukaModalPeringkatKelas() {
     openModal('modal-peringkat-kelas'); renderPeringkatKelas();
 }
@@ -552,7 +560,6 @@ function bukaModalPeringkatKelas() {
 function renderPeringkatKelas() {
     let stats = [];
     for (let kls in daftarNamaPerKelas) {
-        // AMBIL DARI REKAP BULANAN
         let totalAlpha = dbRekapBulanan.kelas[kls] || 0;
         stats.push({ kelas: kls, alpha: totalAlpha });
     }
@@ -593,9 +600,9 @@ function renderPeringkatSiswa() {
     for (let kls in daftarNamaPerKelas) {
         if (filterKelas !== 'Semua' && kls !== filterKelas) continue;
         daftarNamaPerKelas[kls].forEach(nama => {
-            // AMBIL DARI REKAP BULANAN
+            const safeNama = sanitizeKey(nama); // Gunakan nama yang sudah di-sanitize
             let totalAlpha = 0;
-            if(dbRekapBulanan.siswa[kls] && dbRekapBulanan.siswa[kls][nama]) totalAlpha = dbRekapBulanan.siswa[kls][nama];
+            if(dbRekapBulanan.siswa[kls] && dbRekapBulanan.siswa[kls][safeNama]) totalAlpha = dbRekapBulanan.siswa[kls][safeNama];
             stats.push({ nama: nama, kelas: kls, alpha: totalAlpha });
         });
     }
@@ -621,9 +628,9 @@ function renderPeringkatSiswaKelas() {
     
     const daftarNama = daftarNamaPerKelas[kls] || [];
     daftarNama.forEach(nama => {
-        // AMBIL DARI REKAP BULANAN
+        const safeNama = sanitizeKey(nama); // Gunakan nama yang sudah di-sanitize
         let totalAlpha = 0;
-        if(dbRekapBulanan.siswa[kls] && dbRekapBulanan.siswa[kls][nama]) totalAlpha = dbRekapBulanan.siswa[kls][nama];
+        if(dbRekapBulanan.siswa[kls] && dbRekapBulanan.siswa[kls][safeNama]) totalAlpha = dbRekapBulanan.siswa[kls][safeNama];
         stats.push({ nama: nama, alpha: totalAlpha });
     });
     
