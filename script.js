@@ -73,7 +73,7 @@ function hitungJarak(lat1, lon1, lat2, lon2) {
 function verifikasiLokasi() {
     return new Promise((resolve, reject) => {
         if (!navigator.geolocation) {
-            reject("Browser tidak mendukung fitur lokasi.");
+            reject("Browser HP Anda tidak mendukung fitur lokasi.");
         }
         navigator.geolocation.getCurrentPosition(
             (position) => {
@@ -81,17 +81,16 @@ function verifikasiLokasi() {
                 if (jarak <= BATAS_JARAK_METER) {
                     resolve(jarak);
                 } else {
-                    reject(`Tidak bisa absen! Siswa dikuar ${Math.round(jarak)} meter dari sekolah.`);
+                    reject(`Anda berada di luar area absen! Jarak Anda ${Math.round(jarak)} meter dari sekolah.`);
                 }
             },
             (error) => {
-                reject("Pastikan izin lokasi diberikan ke website ini.");
+                reject("Gagal mendapatkan lokasi. Pastikan GPS menyala dan izin lokasi diberikan ke website ini.");
             },
             { enableHighAccuracy: true, timeout: 10000 } // Paksa cari GPS akurat selama maks 10 detik
         );
     });
 }
-
 
 function refreshActiveUI() {
     const dashboardAdmin = document.getElementById('panel-dashboard-admin');
@@ -238,7 +237,7 @@ function renderTabelAdmin() {
         return;
     }
     dbAbsensi.forEach(data => {
-        let badgeClass = data.status === 'Hadir' ? 'badge-hadir' : 'badge-izin';
+        let badgeStyle = data.status === 'Hadir' ? 'background-color: #10b981; color: white;' : (data.status === 'Tidak Hadir' ? 'background-color: #ef4444; color: white;' : 'background-color: #64748b; color: white;');
         let btnFoto = data.foto ? `<button class="btn-small btn-foto-small" onclick="lihatFotoPreview('${data.foto}')">Lihat</button>` : '-';
         let btnHapus = `<button class="btn-small btn-delete-small" onclick="hapusDataIndividu('${data.id}')">Hapus</button>`;
         let tr = document.createElement('tr');
@@ -246,7 +245,7 @@ function renderTabelAdmin() {
             <td><strong>${data.nama}</strong></td>
             <td>${data.kelas}</td>
             <td>${data.hari}</td>
-            <td><span class="status-badge ${badgeClass}">${data.status}</span></td>
+            <td><span class="status-badge" style="${badgeStyle}">${data.status}</span></td>
             <td>${btnFoto}</td>
             <td><span style="font-size:12px; color:#64748b; font-weight:600;">${data.waktuStr}</span></td>
             <td style="text-align: right;">${btnHapus}</td>
@@ -279,7 +278,7 @@ async function hapusDataIndividu(id) {
 async function resetSemuaData() {
     Swal.fire({
         title: 'Yakin?',
-        text: "Reset semua data absensi!",
+        text: "Reset semua data absensi! Ini akan menghapus status 'Tidak Hadir' yang otomatis terbuat.",
         icon: 'error',
         showCancelButton: true,
         confirmButtonColor: '#ef4444',
@@ -299,7 +298,7 @@ async function resetSemuaData() {
 }
 
 function downloadExcel() {
-    if (dbAbsensi.length === 0) return Swal.fire({ title: 'Kosong', text: 'Belum ada yang absen.', icon: 'info', timer: 2500, timerProgressBar: true, showConfirmButton: false });
+    if (dbAbsensi.length === 0) return Swal.fire({ title: 'Kosong', text: 'Belum ada data.', icon: 'info', timer: 2500, timerProgressBar: true, showConfirmButton: false });
     const dataToExport = dbAbsensi.map(item => ({
         "Nama Siswa": item.nama,
         "Kelas": item.kelas,
@@ -317,14 +316,60 @@ function downloadExcel() {
 async function toggleStatusAbsensi() {
     const ref = firebase.database().ref('settings/status_absen');
     const snapshot = await ref.once('value');
-    const currentStatus = snapshot.val();
-    const isClosed = currentStatus === 'ditutup';
-    const newStatus = isClosed ? 'dibuka' : 'ditutup';
-    await ref.set(newStatus);
-    if (newStatus === 'dibuka') {
-        Swal.fire({ title: 'Absensi Dibuka', text: 'Siswa dapat melakukan absen.', icon: 'success', timer: 2500, timerProgressBar: true, showConfirmButton: false });
+    const isClosed = snapshot.val() === 'ditutup';
+    
+    if (isClosed) {
+        // BUKA ABSENSI
+        await ref.set('dibuka');
+        Swal.fire({ title: 'Absensi Dibuka', text: 'Siswa dapat melakukan absen. (Note: Yang sudah Tidak Hadir tidak akan berubah sampai di reset)', icon: 'success', timer: 3000, timerProgressBar: true, showConfirmButton: false });
     } else {
-        Swal.fire({ title: 'Absensi Ditutup', text: 'Siswa tidak bisa absen lagi.', icon: 'warning', timer: 2500, timerProgressBar: true, showConfirmButton: false });
+        // TUTUP ABSENSI & AUTO-TIDAK HADIR
+        const { value: hariDitutup } = await Swal.fire({
+            title: 'Tutup Absensi',
+            text: 'Tutup absensi dan rekap Alpha untuk hari apa?',
+            input: 'select',
+            inputOptions: { 'Senin': 'Senin', 'Selasa': 'Selasa', 'Rabu': 'Rabu', 'Kamis': 'Kamis', 'Jumat': 'Jumat' },
+            inputPlaceholder: 'Pilih Hari...',
+            showCancelButton: true,
+            confirmButtonText: 'Tutup & Rekap',
+            cancelButtonText: 'Batal'
+        });
+
+        if (hariDitutup) {
+            Swal.fire({ title: 'Memproses...', text: 'Merekap siswa yang tidak hadir...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
+            
+            let updates = {};
+            const timeNow = new Date();
+            const waktuStr = timeNow.toLocaleString('id-ID');
+            
+            for (let kls in daftarNamaPerKelas) {
+                daftarNamaPerKelas[kls].forEach(nama => {
+                    // Cari apakah anak ini sudah absen untuk hari tersebut
+                    let hasAbsen = dbAbsensi.find(a => a.kelas === kls && a.nama === nama && a.hari === hariDitutup);
+                    if (!hasAbsen) {
+                        const uniqueId = "ID_" + timeNow.getTime() + "_" + Math.random().toString(36).substr(2, 5);
+                        updates['absensi/' + uniqueId] = {
+                            kelas: kls, 
+                            hari: hariDitutup, 
+                            nama: nama, 
+                            status: 'Tidak Hadir', 
+                            keterangan: 'Ditutup Sistem (Alpha)', 
+                            foto: '', 
+                            filePath: '', 
+                            waktuStr: waktuStr, 
+                            lockKey: `absen_${kls}_${nama}_${hariDitutup}`
+                        };
+                    }
+                });
+            }
+            
+            if (Object.keys(updates).length > 0) {
+                await firebase.database().ref().update(updates);
+            }
+            
+            await ref.set('ditutup');
+            Swal.fire({ title: 'Absensi Ditutup', text: `Siswa yang belum absen pada hari ${hariDitutup} telah otomatis ditandai Tidak Hadir (Alpha).`, icon: 'warning', timer: 4000, timerProgressBar: true, showConfirmButton: false });
+        }
     }
     updateTeksTombolBukaTutup();
 }
@@ -365,14 +410,14 @@ function renderTabelKelas() {
     }
     tbody.innerHTML = "";
     dataKelas.forEach(data => {
-        let badgeClass = data.status === 'Hadir' ? 'badge-hadir' : 'badge-izin';
+        let badgeStyle = data.status === 'Hadir' ? 'background-color: #10b981; color: white;' : (data.status === 'Tidak Hadir' ? 'background-color: #ef4444; color: white;' : 'background-color: #64748b; color: white;');
         let btnFoto = data.foto ? `<button class="btn-small btn-foto-small" onclick="lihatFotoPreview('${data.foto}')">Lihat</button>` : '-';
         let btnHapus = `<button class="btn-small btn-delete-small" onclick="hapusDataIndividu('${data.id}')">Hapus</button>`;
         let tr = document.createElement('tr');
         tr.innerHTML = `
             <td><strong>${data.nama}</strong></td>
             <td>${data.hari}</td>
-            <td><span class="status-badge ${badgeClass}">${data.status}</span></td>
+            <td><span class="status-badge" style="${badgeStyle}">${data.status}</span></td>
             <td>${btnFoto}</td>
             <td><span style="font-size:12px; color:#64748b; font-weight:600;">${data.waktuStr}</span></td>
             <td style="text-align: right;">${btnHapus}</td>
@@ -385,7 +430,7 @@ async function resetDataKelas() {
     const kelas = currentUser.kelas;
     Swal.fire({
         title: 'Yakin?',
-        text: `Reset semua data absensi kelas ${kelas}!`,
+        text: `Reset semua data absensi kelas ${kelas}! Termasuk status Tidak Hadir yang otomatis terbuat.`,
         icon: 'error',
         showCancelButton: true,
         confirmButtonColor: '#ef4444',
@@ -499,13 +544,13 @@ function renderTabelKehadiran() {
         return;
     }
     hasilAkhir.forEach(item => {
-        let badgeClass = item.status === 'Hadir' ? 'badge-hadir' : 'badge-belum';
+        let badgeStyle = item.status === 'Hadir' ? 'background-color: #10b981; color: white;' : (item.status === 'Tidak Hadir' ? 'background-color: #ef4444; color: white;' : 'background-color: #64748b; color: white;');
         let btnFoto = item.foto ? `<button class="btn-small btn-foto-small" onclick="lihatFotoPreview('${item.foto}')">Lihat</button>` : '-';
         let infoKet = item.keterangan !== "-" ? `<div style="font-size:12px; color:#666; margin-top:5px; font-weight:500;">${item.keterangan}</div>` : '';
         tbody.innerHTML += `
             <tr>
                 <td><strong>${item.nama}</strong></td>
-                <td><span class="status-badge ${badgeClass}">${item.status}</span></td>
+                <td><span class="status-badge" style="${badgeStyle}">${item.status}</span></td>
                 <td>${btnFoto} ${infoKet}</td>
             </tr>
         `;
@@ -547,18 +592,128 @@ function renderTabelKehadiranKelas() {
     });
     tbody.innerHTML = "";
     hasilAkhir.forEach(item => {
-        let badgeClass = item.status === 'Hadir' ? 'badge-hadir' : 'badge-belum';
+        let badgeStyle = item.status === 'Hadir' ? 'background-color: #10b981; color: white;' : (item.status === 'Tidak Hadir' ? 'background-color: #ef4444; color: white;' : 'background-color: #64748b; color: white;');
         let btnFoto = item.foto ? `<button class="btn-small btn-foto-small" onclick="lihatFotoPreview('${item.foto}')">Lihat</button>` : '-';
         let infoKet = item.keterangan !== "-" ? `<div style="font-size:12px; color:#666; margin-top:5px; font-weight:500;">${item.keterangan}</div>` : '';
         tbody.innerHTML += `
             <tr>
                 <td><strong>${item.nama}</strong></td>
-                <td><span class="status-badge ${badgeClass}">${item.status}</span></td>
+                <td><span class="status-badge" style="${badgeStyle}">${item.status}</span></td>
                 <td>${btnFoto} ${infoKet}</td>
             </tr>
         `;
     });
 }
+
+// ==== FITUR PERINGKAT/REKAP BULANAN (OWNER/DEVELOPER) ====
+function bukaModalPeringkatKelas() {
+    openModal('modal-peringkat-kelas');
+    renderPeringkatKelas();
+}
+
+function renderPeringkatKelas() {
+    let stats = [];
+    for (let kls in daftarNamaPerKelas) {
+        // Hitung total 'Tidak Hadir' di kelas tersebut
+        let totalAlpha = dbAbsensi.filter(a => a.kelas === kls && a.status === 'Tidak Hadir').length;
+        stats.push({ kelas: kls, alpha: totalAlpha });
+    }
+    // Urutkan berdasarkan alpha terendah
+    stats.sort((a, b) => a.alpha - b.alpha);
+    
+    const tbody = document.getElementById('tbody-peringkat-kelas');
+    tbody.innerHTML = "";
+    stats.forEach((item, index) => {
+        let rankMedal = index === 0 ? "🥇" : (index === 1 ? "🥈" : (index === 2 ? "🥉" : (index + 1)));
+        tbody.innerHTML += `<tr>
+            <td style="text-align:center; font-weight:bold; font-size:18px;">${rankMedal}</td>
+            <td><strong style="font-size:16px;">${item.kelas}</strong></td>
+            <td style="text-align:center;"><span style="color:#ef4444; font-weight:bold; font-size:16px;">${item.alpha}</span></td>
+        </tr>`;
+    });
+}
+
+function bukaModalPeringkatSiswa() {
+    openModal('modal-peringkat-siswa');
+    generateFilterKelasPeringkat();
+    document.getElementById('filter-peringkat-kelas-val').value = "Semua";
+    document.getElementById('teks-peringkat-kelas').innerText = "Semua Kelas";
+    renderPeringkatSiswa();
+}
+
+function generateFilterKelasPeringkat() {
+    const container = document.getElementById('list-peringkat-kelas-container');
+    container.innerHTML = `<div class="modal-item" onclick="pilihFilterPeringkatKelas('Semua')">Semua Kelas</div>`;
+    for (let i = 1; i <= 10; i++) {
+        const kelas = "XIF" + i;
+        container.innerHTML += `<div class="modal-item" onclick="pilihFilterPeringkatKelas('${kelas}')">${kelas}</div>`;
+    }
+}
+
+function pilihFilterPeringkatKelas(kelas) {
+    document.getElementById('filter-peringkat-kelas-val').value = kelas;
+    document.getElementById('teks-peringkat-kelas').innerText = kelas === 'Semua' ? 'Semua Kelas' : kelas;
+    closeModal('modal-peringkat-kelas-pilih');
+    renderPeringkatSiswa();
+}
+
+function renderPeringkatSiswa() {
+    const filterKelas = document.getElementById('filter-peringkat-kelas-val').value;
+    let stats = [];
+    
+    for (let kls in daftarNamaPerKelas) {
+        if (filterKelas !== 'Semua' && kls !== filterKelas) continue; // Filter kelas
+        
+        daftarNamaPerKelas[kls].forEach(nama => {
+            let totalAlpha = dbAbsensi.filter(a => a.kelas === kls && a.nama === nama && a.status === 'Tidak Hadir').length;
+            stats.push({ nama: nama, kelas: kls, alpha: totalAlpha });
+        });
+    }
+    
+    stats.sort((a, b) => a.alpha - b.alpha); // Urutkan paling teladan (alpha = 0)
+    
+    const tbody = document.getElementById('tbody-peringkat-siswa');
+    tbody.innerHTML = "";
+    stats.forEach((item, index) => {
+        let rankMedal = index === 0 ? "🥇" : (index === 1 ? "🥈" : (index === 2 ? "🥉" : (index + 1)));
+        tbody.innerHTML += `<tr>
+            <td style="text-align:center; font-weight:bold; font-size:16px;">${rankMedal}</td>
+            <td><strong>${item.nama}</strong><br><small style="color:#64748b;">${item.kelas}</small></td>
+            <td style="text-align:center;"><span style="color:#ef4444; font-weight:bold;">${item.alpha}</span></td>
+        </tr>`;
+    });
+}
+
+// ==== FITUR SISWA TERTELADAN (ADMIN PERKELAS) ====
+function bukaModalPeringkatSiswaKelas() {
+    openModal('modal-peringkat-siswa-kelas');
+    renderPeringkatSiswaKelas();
+}
+
+function renderPeringkatSiswaKelas() {
+    const kls = currentUser.kelas;
+    let stats = [];
+    
+    const daftarNama = daftarNamaPerKelas[kls] || [];
+    daftarNama.forEach(nama => {
+        let totalAlpha = dbAbsensi.filter(a => a.kelas === kls && a.nama === nama && a.status === 'Tidak Hadir').length;
+        stats.push({ nama: nama, alpha: totalAlpha });
+    });
+    
+    stats.sort((a, b) => a.alpha - b.alpha); 
+    
+    const tbody = document.getElementById('tbody-peringkat-siswa-kelas');
+    tbody.innerHTML = "";
+    stats.forEach((item, index) => {
+        let rankMedal = index === 0 ? "🥇" : (index === 1 ? "🥈" : (index === 2 ? "🥉" : (index + 1)));
+        tbody.innerHTML += `<tr>
+            <td style="text-align:center; font-weight:bold; font-size:16px;">${rankMedal}</td>
+            <td><strong>${item.nama}</strong></td>
+            <td style="text-align:center;"><span style="color:#ef4444; font-weight:bold;">${item.alpha}</span></td>
+        </tr>`;
+    });
+}
+
 
 function lihatFotoPreview(url) {
     document.getElementById('preview-image-src').src = url;
@@ -700,13 +855,11 @@ async function kirimAbsen() {
     const hari = document.getElementById('hari').value;
     const nama = document.getElementById('nama-terpilih').value;
     
-    // Status kini langsung otomatis 'Hadir'
     const status = 'Hadir'; 
     const keterangan = "-";
 
     if (!kelas || !hari || !nama) return Swal.fire({ title: 'Gagal', text: 'Isi semua data.', icon: 'warning', timer: 2500, timerProgressBar: true, showConfirmButton: false });
 
-    // === Cek Lokasi (Geofencing) ===
     Swal.fire({
         title: 'Mengecek Lokasi...',
         text: 'Mohon tunggu, memastikan Anda berada di area sekolah.',
@@ -720,12 +873,10 @@ async function kirimAbsen() {
     } catch (pesanError) {
         return Swal.fire({ title: 'Gagal Absen', text: pesanError, icon: 'error' });
     }
-    // ===============================
 
     let fotoSimpan = document.getElementById('foto-data').value;
     if (!fotoSimpan) return Swal.fire({ title: 'Bukti Diperlukan', text: 'Ambil foto terlebih dahulu.', icon: 'warning', timer: 2500, timerProgressBar: true, showConfirmButton: false });
 
-    // Loading saat upload foto ke Supabase
     Swal.fire({
         title: 'Mengirim Data...',
         text: 'Mohon tunggu sebentar',
@@ -816,7 +967,6 @@ function switchPanel(panelId, isAdminPanel = false) {
     }
 
     if (panelId === 'panel-awal') matikanKamera();
-    // Nyalakan kamera otomatis saat panel siswa dibuka karena izin sudah tidak ada
     if (panelId === 'panel-absen') mulaiKamera();
 }
 
