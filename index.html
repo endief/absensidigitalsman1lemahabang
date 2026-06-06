@@ -40,12 +40,6 @@
             <button class="btn-secondary" onclick="switchPanel('panel-pengelola')">Pengelola</button>
         </div>
 
-        <div class="app-container" id="main-container">
-        <div id="panel-awal" class="panel active">
-            <img src="https://raw.githubusercontent.com/endief/absensidigitalsman1lemahabang/250eb3dfec1bcefa494e569e92f74699f4fba057/SMANSALA.png" 
-                 alt="Logo SMAN 1 Lemahabang" 
-                 class="logo-sekolah"
-                 onerror="this.style.display='none'">
         <div id="panel-pengelola" class="panel">
             <h2 class="panel-title">Akses Masuk Pengelola</h2>
             <p class="form-desc">Masukkan Username dan Password</p>
@@ -61,24 +55,24 @@
             <button class="btn-text" onclick="switchPanel('panel-awal')">KEMBALI</button>
         </div>
 
-            <div class="app-container" id="main-container">
-        <div id="panel-awal" class="panel active">
-            <img src="https://raw.githubusercontent.com/endief/absensidigitalsman1lemahabang/250eb3dfec1bcefa494e569e92f74699f4fba057/SMANSALA.png" 
-                 alt="Logo SMAN 1 Lemahabang" 
-                 class="logo-sekolah"
-                 onerror="this.style.display='none'">
         <div id="panel-dashboard-admin" class="panel">
-            <h2 class="panel-title">Absensi Digital Smansala</h2>
+            <h2 class="panel-title">Absensi Digital</h2>
             <p style="color: var(--neon-cyan); font-weight: 700; margin-bottom: 25px; text-align: center;">SMAN 1 LEMAHABANG</p>
+            
             <div class="admin-controls">
                 <button class="btn-info" onclick="bukaModalKehadiran()">Rekap Kehadiran</button>
                 <button class="btn-secondary" onclick="bukaModalKelolaAdminKelas()">Kelola Admin Kelas</button>
+            </div>
+            <div class="admin-controls">
+                <button class="btn-info" style="background: var(--neon-cyan); color: #0f172a;" onclick="bukaModalPeringkatKelas()">Peringkat Kelas</button>
+                <button class="btn-info" style="background: var(--neon-cyan); color: #0f172a;" onclick="bukaModalPeringkatSiswa()">Siswa Terteladan</button>
             </div>
             <div class="admin-controls">
                 <button id="btn-toggle-absen" onclick="toggleStatusAbsensi()">Tutup Absensi</button>
                 <button class="btn-primary" onclick="downloadExcel()">Download Excel</button>
             </div>
             <button class="btn-danger" onclick="resetSemuaData()">Reset Seluruh Data</button>
+            
             <div class="table-responsive">
                 <table>
                     <thead>
@@ -95,11 +89,16 @@
         <div id="panel-dashboard-kelas" class="panel">
             <h2 class="panel-title">Absensi Digital</h2>
             <p id="admin-kelas-display" style="color: var(--neon-cyan); font-weight: 700; margin-bottom: 15px; text-align: center;"></p>
+            
             <div class="admin-controls">
                 <button class="btn-info" onclick="bukaModalKehadiranKelas()">Rekap Kehadiran</button>
-                <button class="btn-primary" onclick="downloadExcelKelas()">Download Excel</button>
+                <button class="btn-info" style="background: var(--neon-cyan); color: #0f172a;" onclick="bukaModalPeringkatSiswaKelas()">Siswa Terteladan</button>
+            </div>
+            <div class="admin-controls">
+                <button class="btn-primary" onclick="downloadExcelKelas()" style="width: 100%;">Download Excel</button>
             </div>
             <button class="btn-danger" onclick="resetDataKelas()">Reset Data Kelas</button>
+            
             <div class="table-responsive">
                 <table>
                     <thead>
@@ -212,6 +211,58 @@
         </div>
     </div>
 
+    <div id="modal-peringkat-kelas" class="modal-overlay" onclick="closeModal('modal-peringkat-kelas')">
+        <div class="modal-content" onclick="event.stopPropagation()" style="max-width: 600px; height: 80vh; display: flex; flex-direction: column; padding: 25px 20px;">
+            <div class="modal-header" style="margin-bottom: 15px;"><h3 style="font-size: 18px;">🏆 Peringkat Kelas (Bulanan)</h3><button class="close-btn" onclick="closeModal('modal-peringkat-kelas')">✕</button></div>
+            <p style="font-size: 13px; color: #64748b; margin-bottom: 15px; text-align: center;">Daftar kelas dengan tingkat kehadiran terbaik (angka ketidakhadiran paling sedikit).</p>
+            <div class="table-responsive" style="flex: 1; margin-bottom: 0;">
+                <table style="min-width: 100%;">
+                    <thead><tr><th style="text-align:center; width:50px;">Rank</th><th>Kelas</th><th style="text-align:center;">Total Alpha</th></tr></thead>
+                    <tbody id="tbody-peringkat-kelas"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-peringkat-siswa" class="modal-overlay" onclick="closeModal('modal-peringkat-siswa')">
+        <div class="modal-content" onclick="event.stopPropagation()" style="max-width: 700px; height: 90vh; display: flex; flex-direction: column; padding: 25px 20px;">
+            <div class="modal-header" style="margin-bottom: 15px;"><h3 style="font-size: 18px;">🌟 Siswa Terteladan</h3><button class="close-btn" onclick="closeModal('modal-peringkat-siswa')">✕</button></div>
+            
+            <div style="margin-bottom: 15px;">
+                <input type="hidden" id="filter-peringkat-kelas-val" value="Semua">
+                <div class="custom-select-btn" onclick="openModal('modal-peringkat-kelas-pilih')" style="padding: 14px;">
+                    <span id="teks-peringkat-kelas">Semua Kelas</span> <span style="font-size: 10px; color:#94a3b8;">▼</span>
+                </div>
+            </div>
+
+            <div class="table-responsive" style="flex: 1; margin-bottom: 0;">
+                <table style="min-width: 100%;">
+                    <thead><tr><th style="text-align:center; width:50px;">Rank</th><th>Nama Siswa</th><th style="text-align:center;">Total Alpha</th></tr></thead>
+                    <tbody id="tbody-peringkat-siswa"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-peringkat-kelas-pilih" class="modal-overlay" style="z-index: 1050;" onclick="closeModal('modal-peringkat-kelas-pilih')">
+        <div class="modal-content" onclick="event.stopPropagation()"><div class="modal-header"><h3>Filter Kelas</h3><button class="close-btn" onclick="closeModal('modal-peringkat-kelas-pilih')">✕</button></div>
+            <div id="list-peringkat-kelas-container"></div>
+        </div>
+    </div>
+
+    <div id="modal-peringkat-siswa-kelas" class="modal-overlay" onclick="closeModal('modal-peringkat-siswa-kelas')">
+        <div class="modal-content" onclick="event.stopPropagation()" style="max-width: 600px; height: 85vh; display: flex; flex-direction: column; padding: 25px 20px;">
+            <div class="modal-header" style="margin-bottom: 15px;"><h3 style="font-size: 18px;">🌟 Siswa Terteladan Kelas</h3><button class="close-btn" onclick="closeModal('modal-peringkat-siswa-kelas')">✕</button></div>
+            <p id="teks-peringkat-kelas-info" style="font-size: 13px; color: #64748b; margin-bottom: 15px; text-align: center;">Daftar siswa dengan kehadiran terbaik di kelas ini.</p>
+            <div class="table-responsive" style="flex: 1; margin-bottom: 0;">
+                <table style="min-width: 100%;">
+                    <thead><tr><th style="text-align:center; width:50px;">Rank</th><th>Nama Siswa</th><th style="text-align:center;">Total Alpha</th></tr></thead>
+                    <tbody id="tbody-peringkat-siswa-kelas"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
     <div id="modal-admin-kelas" class="modal-overlay" style="z-index: 1050;" onclick="closeModal('modal-admin-kelas')">
         <div class="modal-content" onclick="event.stopPropagation()"><div class="modal-header"><h3>Pilih Kelas</h3><button class="close-btn" onclick="closeModal('modal-admin-kelas')">✕</button></div>
             <div id="list-admin-kelas-container"></div>
@@ -236,6 +287,7 @@
                 <div class="modal-item" onclick="pilihAdminStatus('Semua')">Semua</div>
                 <div class="modal-item" onclick="pilihAdminStatus('Hadir')">Hadir</div>
                 <div class="modal-item" onclick="pilihAdminStatus('Belum Absen')">Belum Absen</div>
+                <div class="modal-item" onclick="pilihAdminStatus('Tidak Hadir')">Tidak Hadir (Alpha)</div>
             </div>
         </div>
     </div>
