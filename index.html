@@ -71,7 +71,11 @@
                 <button id="btn-toggle-absen" onclick="toggleStatusAbsensi()">Tutup Absensi</button>
                 <button class="btn-primary" onclick="downloadExcel()">Download Excel</button>
             </div>
-            <button class="btn-danger" onclick="resetSemuaData()">Reset Seluruh Data</button>
+            
+            <div style="display: flex; gap: 10px;">
+                <button class="btn-danger" onclick="resetSemuaData()" style="flex: 1; padding: 12px; font-size: 13px;">Reset Data Harian</button>
+                <button class="btn-danger" style="background-color: #f59e0b; flex: 1; padding: 12px; font-size: 13px;" onclick="resetRekapBulanan()">Reset Rekap Bulanan</button>
+            </div>
             
             <div class="table-responsive">
                 <table>
@@ -175,6 +179,20 @@
                 <div class="modal-item" onclick="pilihHari('Rabu')">Rabu</div>
                 <div class="modal-item" onclick="pilihHari('Kamis')">Kamis</div>
                 <div class="modal-item" onclick="pilihHari('Jumat')">Jumat</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-tutup-absen-hari" class="modal-overlay" style="z-index: 1050;" onclick="closeModal('modal-tutup-absen-hari')">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-header"><h3>Pilih Hari Penutupan</h3><button class="close-btn" onclick="closeModal('modal-tutup-absen-hari')">✕</button></div>
+            <p style="font-size: 13px; color: #64748b; margin-bottom: 15px; text-align: center;">Siswa yang belum absen akan otomatis tercatat Alpha (Tidak Hadir) dan Rekap Bulanan akan terupdate.</p>
+            <div>
+                <div class="modal-item" onclick="prosesTutupAbsensi('Senin')">Senin</div>
+                <div class="modal-item" onclick="prosesTutupAbsensi('Selasa')">Selasa</div>
+                <div class="modal-item" onclick="prosesTutupAbsensi('Rabu')">Rabu</div>
+                <div class="modal-item" onclick="prosesTutupAbsensi('Kamis')">Kamis</div>
+                <div class="modal-item" onclick="prosesTutupAbsensi('Jumat')">Jumat</div>
             </div>
         </div>
     </div>
