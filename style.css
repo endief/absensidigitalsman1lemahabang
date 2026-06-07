@@ -2,7 +2,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
 
 :root {
-    --bg-color: #f4f7f6; /* Warna abu-abu sangat muda */
+    --bg-color: #f4f7f6;
     --text-main: #1e293b;
     --text-muted: #64748b;
     --font-heading: 'Outfit', sans-serif;
@@ -18,7 +18,6 @@
 
 body {
     background-color: var(--bg-color);
-    /* Background bintik-bintik persis seperti screenshot login */
     background-image: radial-gradient(#cbd5e1 1.5px, transparent 1.5px);
     background-size: 25px 25px;
     color: var(--text-main);
@@ -30,7 +29,7 @@ body {
     padding: 20px;
 }
 
-.glow-bg { display: none; } /* Glow dihapus karena pakai tema clean */
+.glow-bg { display: none; }
 
 /* ========== MAIN CONTAINER ========== */
 .app-container {
@@ -53,6 +52,7 @@ body {
 .panel {
     display: none;
     animation: fadeIn 0.4s ease forwards;
+    text-align: center; /* Memastikan isi di tengah */
 }
 .panel.active { display: block; }
 @keyframes fadeIn {
@@ -60,10 +60,12 @@ body {
     to { opacity: 1; transform: translateY(0); }
 }
 
+/* Logo di tengah */
 .logo-sekolah {
     display: block;
     max-width: 80px;
-    margin-bottom: 20px;
+    margin: 0 auto 15px auto;
+    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1));
 }
 
 .portal-title, .judul-absen, .panel-title {
@@ -73,9 +75,8 @@ body {
     color: #0f172a;
     line-height: 1.2;
     margin-bottom: 5px;
+    text-align: center;
 }
-
-.panel-title { text-align: center; }
 
 .sub-absen, .instansi-sub {
     font-family: var(--font-body);
@@ -85,15 +86,16 @@ body {
     text-transform: uppercase;
     letter-spacing: 1px;
     margin-bottom: 30px;
+    text-align: center;
 }
 
-/* Teks Biru Cyan di Admin */
+/* Teks Subjudul di Admin */
 .text-cyan {
-    color: #38bdf8 !important;
+    color: #0369a1 !important;
     text-transform: uppercase;
     letter-spacing: 1px;
     font-size: 14px;
-    font-weight: 600;
+    font-weight: 700;
     margin-bottom: 30px;
     text-align: center;
 }
@@ -108,7 +110,6 @@ body {
     color: #1e293b;
 }
 
-/* Input style abu-abu halus tanpa border seperti screenshot 2 */
 .input-field, .custom-select-btn {
     font-family: var(--font-body);
     width: 100%;
@@ -129,50 +130,59 @@ body {
     box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.1);
 }
 
-.custom-select-btn {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
+.custom-select-btn { display: flex; justify-content: space-between; align-items: center; }
 
-/* Khusus Form Login yang ada border halusnya */
-#panel-pengelola .input-field {
-    background: #ffffff;
-    border: 1px solid #cbd5e1;
-}
-#panel-pengelola .input-field:focus { border-color: #3b82f6; }
-#panel-pengelola label { text-transform: uppercase; font-size: 12px; letter-spacing: 1px; }
-
-/* ========== TOMBOL (BUTTONS) ========== */
+/* ========== TOMBOL (MODERN & GLOWING) ========== */
 button {
     font-family: var(--font-body);
     width: 100%;
-    padding: 16px;
+    padding: 15px;
     border: none;
-    border-radius: 12px;
+    border-radius: 16px; /* Lebih rounded */
     font-size: 15px;
-    font-weight: 600;
+    font-weight: 700;
     cursor: pointer;
     margin-bottom: 15px;
-    transition: 0.2s;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
-button:active { transform: scale(0.98); }
 
-/* Tombol Absensi Utama (Merah Pink) */
-.btn-primary { background: #f43f5e; color: white; }
-.btn-primary:hover { background: #e11d48; }
+button:hover {
+    transform: translateY(-3px);
+}
 
-/* Tombol Login (Biru) */
-.btn-blue { background: #3b82f6; color: white; }
-.btn-blue:hover { background: #2563eb; }
+button:active {
+    transform: translateY(1px);
+}
 
-/* Tombol Outline (Putih) */
-.btn-outline { background: #ffffff; color: #0f172a; border: 1px solid #cbd5e1; }
-.btn-outline:hover { background: #f8fafc; }
+/* Warna Tua + Efek Glow */
+.btn-primary { background: #991b1b; color: white; box-shadow: 0 6px 16px rgba(153, 27, 27, 0.3); } /* Merah Darah */
+.btn-primary:hover { box-shadow: 0 8px 24px rgba(153, 27, 27, 0.45); background: #7f1d1d; }
 
-.btn-text { background: transparent; color: #64748b; font-weight: 600; }
+.btn-blue { background: #1e3a8a; color: white; box-shadow: 0 6px 16px rgba(30, 58, 138, 0.3); } /* Biru Tua */
+.btn-blue:hover { box-shadow: 0 8px 24px rgba(30, 58, 138, 0.45); background: #172554; }
 
-/* ===== TOMBOL GRID ADMIN (Warna-warni sesuai screenshot) ===== */
+.btn-merah { background: #991b1b; color: white; box-shadow: 0 6px 16px rgba(153, 27, 27, 0.3); }
+.btn-merah:hover { background: #7f1d1d; }
+
+.btn-oren { background: #9a3412; color: white; box-shadow: 0 6px 16px rgba(154, 52, 18, 0.3); } /* Oren Tua */
+.btn-oren:hover { background: #7c2d12; }
+
+.btn-cyan { background: #0f766e; color: white; box-shadow: 0 6px 16px rgba(15, 118, 110, 0.3); } /* Teal Tua */
+.btn-cyan:hover { background: #115e59; }
+
+.btn-pink-soft { background: #831843; color: white; box-shadow: 0 6px 16px rgba(131, 24, 67, 0.3); } /* Magenta Tua */
+.btn-pink-soft:hover { background: #701a3d; }
+
+.btn-abu { background: #334155; color: white; box-shadow: 0 6px 16px rgba(51, 65, 85, 0.3); } /* Abu Tua */
+.btn-abu:hover { background: #1e293b; }
+
+.btn-outline { background: #ffffff; color: #0f172a; border: 2px solid #e2e8f0; }
+.btn-outline:hover { background: #f8fafc; border-color: #cbd5e1; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+
+.btn-text { background: transparent; color: #64748b; font-weight: 600; box-shadow: none; }
+.btn-text:hover { color: #1e293b; transform: none; }
+
+/* Grid Tombol Admin */
 .admin-controls {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -180,14 +190,9 @@ button:active { transform: scale(0.98); }
     margin-bottom: 12px;
 }
 
-.btn-abu { background: #f1f5f9; color: #0f172a; }
-.btn-cyan { background: #67e8f9; color: #0f172a; }
-.btn-oren { background: #f59e0b; color: white; }
-.btn-merah { background: #ef4444; color: white; }
-.btn-pink-soft { background: #ffe4e6; color: #e11d48; }
-
-.btn-small { padding: 8px 12px; font-size: 12px; border-radius: 6px; margin: 0; }
-.btn-delete-small { background: #fee2e2; color: #ef4444; }
+.btn-small { padding: 8px 12px; font-size: 12px; border-radius: 8px; margin: 0; box-shadow: none; font-weight: 600; }
+.btn-small:hover { transform: scale(1.05); }
+.btn-delete-small { background: #fee2e2; color: #b91c1c; }
 
 /* ========== LIST NAMA & TABEL ========== */
 .name-list {
@@ -196,12 +201,16 @@ button:active { transform: scale(0.98); }
     border-radius: 12px;
     background: #f8fafc;
     margin-bottom: 15px;
+    text-align: left;
 }
 .name-item {
     padding: 15px 18px;
     cursor: pointer;
     border-bottom: 1px solid #e2e8f0;
     font-size: 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 .name-item.terpilih { background: #e0f2fe; color: #0284c7; font-weight: 700; }
 .name-item.disabled { color: #94a3b8; pointer-events: none; }
@@ -212,12 +221,44 @@ button:active { transform: scale(0.98); }
     border: 1px solid #e2e8f0;
     border-radius: 12px;
     margin-bottom: 15px;
+    text-align: left;
 }
-table { width: 100%; border-collapse: collapse; min-width: 600px; }
-th { background: #f8fafc; padding: 14px; font-size: 13px; color: #64748b; text-transform: uppercase; font-weight: 600; text-align: left; border-bottom: 1px solid #e2e8f0;}
+table { width: 100%; border-collapse: collapse; min-width: 500px; }
+th { background: #f8fafc; padding: 14px; font-size: 13px; color: #64748b; text-transform: uppercase; font-weight: 700; border-bottom: 1px solid #e2e8f0;}
 td { padding: 14px; font-size: 14px; border-bottom: 1px solid #e2e8f0; color: #1e293b; }
 
-.status-badge { padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 700; }
+/* Wrapper Khusus Untuk Mendekatkan Jarak Nama & Alpha */
+.table-rank { max-width: 400px; margin: 0 auto; }
+.table-rank table { min-width: 100%; }
+
+/* Badge Status Modern dengan Animasi */
+.badge-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 700;
+}
+.badge-hadir { background-color: #dcfce7; color: #166534; }
+.badge-alpha { background-color: #fee2e2; color: #991b1b; }
+.badge-belum { background-color: #f1f5f9; color: #475569; }
+
+/* ========== ANIMASI SVG MODERN ========== */
+.anim-check {
+    stroke-dasharray: 50;
+    stroke-dashoffset: 50;
+    animation: drawIcon 0.5s ease forwards;
+}
+.anim-cross {
+    stroke-dasharray: 50;
+    stroke-dashoffset: 50;
+    animation: drawIcon 0.5s ease forwards;
+}
+@keyframes drawIcon {
+    to { stroke-dashoffset: 0; }
+}
 
 /* ========== KAMERA ========== */
 .camera-wrapper {
@@ -240,61 +281,37 @@ video, canvas { width: 100%; display: block; transform: scaleX(-1); }
 }
 .modal-overlay.show { opacity: 1; visibility: visible; }
 .modal-content {
-    background: #fff; width: 90%; max-width: 400px;
-    border-radius: 20px; padding: 25px;
-    transform: scale(0.9); transition: 0.3s;
-    max-height: 80vh; overflow-y: auto;
+    background: #fff; width: 90%; max-width: 420px;
+    border-radius: 24px; padding: 25px;
+    transform: scale(0.9); transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    max-height: 85vh; overflow-y: auto; text-align: left;
 }
 .modal-overlay.show .modal-content { transform: scale(1); }
-.modal-header { display: flex; justify-content: space-between; margin-bottom: 20px; }
-.modal-header h3 { font-size: 18px; font-weight: 700; }
-.close-btn { background: #f1f5f9; border: none; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; }
+.modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.modal-header h3 { font-size: 18px; font-weight: 800; color: #0f172a; }
+
+/* Close Button Modern */
+.close-btn { 
+    background: #f1f5f9; border: none; width: 36px; height: 36px; 
+    border-radius: 50%; cursor: pointer; display: flex; justify-content: center; align-items: center;
+    color: #64748b; padding: 0; margin: 0; box-shadow: none; transition: 0.2s;
+}
+.close-btn:hover { background: #e2e8f0; color: #ef4444; transform: rotate(90deg); }
+
 .modal-item { padding: 15px; border-bottom: 1px solid #f1f5f9; cursor: pointer; font-weight: 600; text-align: center;}
-.modal-item:hover { background: #f8fafc; color: #38bdf8; }
+.modal-item:hover { background: #f8fafc; color: #0f766e; }
 
 /* ========== ANIMASI LOADING MZ-LOADER (3 BOLA) ========== */
-.mz-loader-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 20px 0;
-}
-
-.mz-loader {
-    display: flex;
-    align-items: flex-end;
-    justify-content: center;
-    gap: 15px;
-    height: 50px;
-    margin-bottom: 20px;
-}
-
-.mz-loader span {
-    height: 25px;
-    width: 25px;
-    background-color: rgba(0, 213, 255, 1);
-    border-radius: 50%;
-    animation: mz-bounce 0.6s ease-in-out infinite alternate;
-}
-
+.mz-loader-container { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px 0; }
+.mz-loader { display: flex; align-items: flex-end; justify-content: center; gap: 15px; height: 50px; margin-bottom: 20px; }
+.mz-loader span { height: 25px; width: 25px; background-color: #0ea5e9; border-radius: 50%; animation: mz-bounce 0.6s ease-in-out infinite alternate; }
 .mz-loader span:nth-child(1) { animation-delay: 0s; }
 .mz-loader span:nth-child(2) { animation-delay: 0.2s; }
 .mz-loader span:nth-child(3) { animation-delay: 0.4s; }
-
-@keyframes mz-bounce {
-    0% { transform: translateY(0); }
-    100% { transform: translateY(-25px); }
-}
-
-.mz-text {
-    font-family: var(--font-body);
-    font-size: 16px;
-    font-weight: 600;
-    color: #1e293b;
-}
+@keyframes mz-bounce { 0% { transform: translateY(0); } 100% { transform: translateY(-25px); } }
+.mz-text { font-family: var(--font-body); font-size: 16px; font-weight: 700; color: #1e293b; }
 
 /* Modifikasi SweetAlert Bawaan */
-div:where(.swal2-container) .swal2-popup { border-radius: 20px; font-family: var(--font-body); }
-div:where(.swal2-container) button:where(.swal2-styled).swal2-confirm { background-color: #3b82f6 !important; border-radius: 10px !important; }
-div:where(.swal2-container) button:where(.swal2-styled).swal2-cancel { background-color: #f1f5f9 !important; color: #0f172a !important; }
+div:where(.swal2-container) .swal2-popup { border-radius: 24px; font-family: var(--font-body); }
+div:where(.swal2-container) button:where(.swal2-styled).swal2-confirm { background-color: #1e3a8a !important; border-radius: 12px !important; box-shadow: 0 4px 12px rgba(30, 58, 138, 0.3) !important; }
+div:where(.swal2-container) button:where(.swal2-styled).swal2-cancel { background-color: #f1f5f9 !important; color: #0f172a !important; border-radius: 12px !important; }
