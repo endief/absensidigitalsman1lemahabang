@@ -1,3 +1,20 @@
+// ==== FUNGSI TOGGLE PASSWORD MATA ====
+function togglePassword(inputId, iconDiv) {
+    const input = document.getElementById(inputId);
+    const eyeOpen = iconDiv.querySelector('.eye-open');
+    const eyeClosed = iconDiv.querySelector('.eye-closed');
+
+    if (input.type === 'password') {
+        input.type = 'text';
+        eyeOpen.style.display = 'none';
+        eyeClosed.style.display = 'block';
+    } else {
+        input.type = 'password';
+        eyeOpen.style.display = 'block';
+        eyeClosed.style.display = 'none';
+    }
+}
+
 // ==== KONFIGURASI FIREBASE ====
 const firebaseConfig = {
     apiKey: "AIzaSyAIKGbTo0VPDP52YXzBcbC6BvPjT_KUv9M",
@@ -16,7 +33,6 @@ const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 const supabaseClient = supabase.createClient(supabaseUrl, supabaseAnonKey);
 
 // ==== FUNGSI PEMBERSIH NAMA UNTUK FIREBASE ====
-// Firebase akan menolak struktur data jika ada tanda titik (.), (#), dll. (Misal: "M. Nabil")
 function sanitizeKey(nama) {
     if(!nama) return "unknown";
     return nama.replace(/[.#$\[\]]/g, '_'); 
@@ -71,7 +87,7 @@ initFirebaseListeners();
 // ==== KONFIGURASI GEOFENCING ====
 const KANTOR_LAT = -6.818837;
 const KANTOR_LON = 108.629478;
-const BATAS_JARAK_METER = 200;
+const BATAS_JARAK_METER = 100;
 
 function hitungJarak(lat1, lon1, lat2, lon2) {
     const R = 6371e3;
@@ -257,7 +273,6 @@ async function hapusDataIndividu(id) {
     const data = snap.val();
     Swal.fire({ title: 'Hapus?', text: "Data absensi ini akan dihapus.", icon: 'warning', showCancelButton: true, confirmButtonColor: '#ef4444', confirmButtonText: 'Ya' }).then(async (result) => {
         if (result.isConfirmed) {
-            // Perbaikan: gunakan sanitizeKey agar saat menghapus Alpha, Rekap Bulanan ikut terpotong dengan benar
             if (data && data.status === 'Tidak Hadir') {
                 const safeNama = sanitizeKey(data.nama); 
                 let currentSiswa = dbRekapBulanan.siswa[data.kelas]?.[safeNama] || 0;
@@ -349,7 +364,6 @@ async function prosesTutupAbsensi(hariDitutup) {
         let tempKelas = JSON.parse(JSON.stringify(dbRekapBulanan.kelas || {}));
         
         for (let kls in daftarNamaPerKelas) {
-            // Pengaman memastikan datanya bentuk Array (nama-nama siswa)
             if(!Array.isArray(daftarNamaPerKelas[kls])) continue;
 
             if (!tempSiswa[kls]) tempSiswa[kls] = {};
@@ -363,7 +377,7 @@ async function prosesTutupAbsensi(hariDitutup) {
                         kelas: kls, hari: hariDitutup, nama: nama, status: 'Tidak Hadir', keterangan: 'Ditutup Sistem (Alpha)', foto: '', filePath: '', waktuStr: waktuStr, lockKey: `absen_${kls}_${nama}_${hariDitutup}`
                     };
 
-                    const safeNama = sanitizeKey(nama); // Mengubah tanda . atau # di nama menjadi _
+                    const safeNama = sanitizeKey(nama); 
                     tempSiswa[kls][safeNama] = (tempSiswa[kls][safeNama] || 0) + 1;
                     tempKelas[kls]++;
                 }
@@ -373,7 +387,6 @@ async function prosesTutupAbsensi(hariDitutup) {
         updates['rekap_bulanan/siswa'] = tempSiswa;
         updates['rekap_bulanan/kelas'] = tempKelas;
 
-        // PUSH data ke Firebase
         await firebase.database().ref().update(updates);
         await firebase.database().ref('settings/status_absen').set('ditutup');
         
@@ -600,7 +613,7 @@ function renderPeringkatSiswa() {
     for (let kls in daftarNamaPerKelas) {
         if (filterKelas !== 'Semua' && kls !== filterKelas) continue;
         daftarNamaPerKelas[kls].forEach(nama => {
-            const safeNama = sanitizeKey(nama); // Gunakan nama yang sudah di-sanitize
+            const safeNama = sanitizeKey(nama); 
             let totalAlpha = 0;
             if(dbRekapBulanan.siswa[kls] && dbRekapBulanan.siswa[kls][safeNama]) totalAlpha = dbRekapBulanan.siswa[kls][safeNama];
             stats.push({ nama: nama, kelas: kls, alpha: totalAlpha });
@@ -628,7 +641,7 @@ function renderPeringkatSiswaKelas() {
     
     const daftarNama = daftarNamaPerKelas[kls] || [];
     daftarNama.forEach(nama => {
-        const safeNama = sanitizeKey(nama); // Gunakan nama yang sudah di-sanitize
+        const safeNama = sanitizeKey(nama); 
         let totalAlpha = 0;
         if(dbRekapBulanan.siswa[kls] && dbRekapBulanan.siswa[kls][safeNama]) totalAlpha = dbRekapBulanan.siswa[kls][safeNama];
         stats.push({ nama: nama, alpha: totalAlpha });
