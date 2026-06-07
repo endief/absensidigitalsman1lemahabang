@@ -237,11 +237,11 @@
 
     <div id="modal-peringkat-kelas" class="modal-overlay" onclick="closeModal('modal-peringkat-kelas')">
         <div class="modal-content" onclick="event.stopPropagation()" style="max-width: 600px; height: 80vh; display: flex; flex-direction: column; padding: 25px 20px;">
-            <div class="modal-header" style="margin-bottom: 15px;"><h3 style="font-size: 18px;">🏆 Peringkat Kelas (Bulanan)</h3><button class="close-btn" onclick="closeModal('modal-peringkat-kelas')">✕</button></div>
+            <div class="modal-header" style="margin-bottom: 15px;"><h3 style="font-size: 18px;">Peringkat Kelas (Bulanan)</h3><button class="close-btn" onclick="closeModal('modal-peringkat-kelas')">✕</button></div>
             <p style="font-size: 13px; color: #64748b; margin-bottom: 15px; text-align: center;">Daftar kelas dengan tingkat kehadiran terbaik (angka ketidakhadiran paling sedikit).</p>
             <div class="table-responsive" style="flex: 1; margin-bottom: 0;">
                 <table style="min-width: 100%;">
-                    <thead><tr><th style="text-align:center; width:50px;">Rank</th><th>Kelas</th><th style="text-align:center;">Total Alpha</th></tr></thead>
+                    <thead><tr><th style="text-align:center; width:50px;">Rank</th><th>Kelas</th><th style="text-align:center;">Total Tidak Hadir</th></tr></thead>
                     <tbody id="tbody-peringkat-kelas"></tbody>
                 </table>
             </div>
@@ -250,7 +250,7 @@
 
     <div id="modal-peringkat-siswa" class="modal-overlay" onclick="closeModal('modal-peringkat-siswa')">
         <div class="modal-content" onclick="event.stopPropagation()" style="max-width: 700px; height: 90vh; display: flex; flex-direction: column; padding: 25px 20px;">
-            <div class="modal-header" style="margin-bottom: 15px;"><h3 style="font-size: 18px;">🌟 Siswa Terteladan</h3><button class="close-btn" onclick="closeModal('modal-peringkat-siswa')">✕</button></div>
+            <div class="modal-header" style="margin-bottom: 15px;"><h3 style="font-size: 18px;">Siswa Terteladan</h3><button class="close-btn" onclick="closeModal('modal-peringkat-siswa')">✕</button></div>
             
             <div style="margin-bottom: 15px;">
                 <input type="hidden" id="filter-peringkat-kelas-val" value="Semua">
@@ -261,7 +261,7 @@
 
             <div class="table-responsive" style="flex: 1; margin-bottom: 0;">
                 <table style="min-width: 100%;">
-                    <thead><tr><th style="text-align:center; width:50px;">Rank</th><th>Nama Siswa</th><th style="text-align:center;">Total Alpha</th></tr></thead>
+                    <thead><tr><th style="text-align:center; width:50px;">Rank</th><th>Nama Siswa</th><th style="text-align:center;">Total Ketidakhadiran</th></tr></thead>
                     <tbody id="tbody-peringkat-siswa"></tbody>
                 </table>
             </div>
@@ -276,11 +276,11 @@
 
     <div id="modal-peringkat-siswa-kelas" class="modal-overlay" onclick="closeModal('modal-peringkat-siswa-kelas')">
         <div class="modal-content" onclick="event.stopPropagation()" style="max-width: 600px; height: 85vh; display: flex; flex-direction: column; padding: 25px 20px;">
-            <div class="modal-header" style="margin-bottom: 15px;"><h3 style="font-size: 18px;">🌟 Siswa Terteladan Kelas</h3><button class="close-btn" onclick="closeModal('modal-peringkat-siswa-kelas')">✕</button></div>
+            <div class="modal-header" style="margin-bottom: 15px;"><h3 style="font-size: 18px;">Siswa Terteladan di Kelas</h3><button class="close-btn" onclick="closeModal('modal-peringkat-siswa-kelas')">✕</button></div>
             <p id="teks-peringkat-kelas-info" style="font-size: 13px; color: #64748b; margin-bottom: 15px; text-align: center;">Daftar siswa dengan kehadiran terbaik di kelas ini.</p>
             <div class="table-responsive" style="flex: 1; margin-bottom: 0;">
                 <table style="min-width: 100%;">
-                    <thead><tr><th style="text-align:center; width:50px;">Rank</th><th>Nama Siswa</th><th style="text-align:center;">Total Alpha</th></tr></thead>
+                    <thead><tr><th style="text-align:center; width:50px;">Rank</th><th>Nama Siswa</th><th style="text-align:center;">Total Ketidakhadiran</th></tr></thead>
                     <tbody id="tbody-peringkat-siswa-kelas"></tbody>
                 </table>
             </div>
@@ -311,7 +311,7 @@
                 <div class="modal-item" onclick="pilihAdminStatus('Semua')">Semua</div>
                 <div class="modal-item" onclick="pilihAdminStatus('Hadir')">Hadir</div>
                 <div class="modal-item" onclick="pilihAdminStatus('Belum Absen')">Belum Absen</div>
-                <div class="modal-item" onclick="pilihAdminStatus('Tidak Hadir')">Tidak Hadir (Alpha)</div>
+                <div class="modal-item" onclick="pilihAdminStatus('Tidak Hadir')">Tidak Hadir</div>
             </div>
         </div>
     </div>
