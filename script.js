@@ -1,17 +1,17 @@
-// ==== FUNGSI CUSTOM LOADING (TIKTOK STYLE TOAST) ====
+// ==== FUNGSI CUSTOM LOADING (3 BOLA LOMPAT) ====
 function showCustomLoading(title, text) {
     Swal.fire({
+        title: title,
         html: `
-            <div class="tiktok-toast-container">
-                <div class="tiktok-spinner"></div>
-                <div class="tiktok-toast-text">${text}</div>
+            <div class="mz-loader-container">
+                <div class="mz-loader">
+                    <span></span><span></span><span></span>
+                </div>
+                <div class="mz-text">${text}</div>
             </div>
         `,
         allowOutsideClick: false,
-        showConfirmButton: false,
-        background: 'transparent',
-        backdrop: 'rgba(0,0,0,0.15)', // Latar redup tipis elegan
-        customClass: { popup: 'tiktok-toast-popup' }
+        showConfirmButton: false
     });
 }
 
@@ -108,7 +108,7 @@ initFirebaseListeners();
 // ==== KONFIGURASI GEOFENCING ====
 const KANTOR_LAT = -6.830268;
 const KANTOR_LON = 108.621133;
-const BATAS_JARAK_METER = 2000;
+const BATAS_JARAK_METER = 75;
 
 function hitungJarak(lat1, lon1, lat2, lon2) {
     const R = 6371e3;
@@ -742,28 +742,11 @@ async function kirimAbsen() {
     const payload = { kelas: kelas, hari: hari, nama: nama, status: status, keterangan: keterangan, foto: publicUrl, filePath: fileName, waktuStr: waktuStr, lockKey: `absen_${kelas}_${nama}_${hari}` };
     await firebase.database().ref('absensi/' + uniqueId).set(payload);
 
-        // === ANIMASI CENTANG SUKSES ALA TIKTOK ===
-    Swal.fire({
-        html: `
-            <div class="tiktok-toast-container">
-                <svg class="tiktok-success-icon" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                <div class="tiktok-toast-text">${nama} berhasil absen!</div>
-            </div>
-        `,
-        timer: 2500,
-        showConfirmButton: false,
-        background: 'transparent',
-        backdrop: 'rgba(0,0,0,0.15)',
-        customClass: { popup: 'tiktok-toast-popup' }
-    }).then(() => {
-        document.getElementById('nama-terpilih').value = ""; 
-        document.getElementById('search-nama').value = ""; 
-        document.getElementById('foto-data').value = "";
-        retakePhoto(); 
-        matikanKamera(); 
-        switchPanel('panel-awal');
+    Swal.fire({ title: 'Berhasil!', text: `${nama} telah absen.`, icon: 'success', timer: 2500, showConfirmButton: false }).then(() => {
+        document.getElementById('nama-terpilih').value = ""; document.getElementById('search-nama').value = ""; document.getElementById('foto-data').value = "";
+        retakePhoto(); matikanKamera(); switchPanel('panel-awal');
     });
-
+}
 
 async function hapusFileDariSupabase(filePath) {
     if (!filePath) return;
