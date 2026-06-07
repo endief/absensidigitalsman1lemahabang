@@ -52,7 +52,7 @@ body {
 .panel {
     display: none;
     animation: fadeIn 0.4s ease forwards;
-    text-align: center; /* Memastikan isi di tengah */
+    text-align: center;
 }
 .panel.active { display: block; }
 @keyframes fadeIn {
@@ -60,12 +60,19 @@ body {
     to { opacity: 1; transform: translateY(0); }
 }
 
-/* Logo di tengah */
+/* Logo Default (Untuk Dashboard & Login) */
 .logo-sekolah {
     display: block;
-    max-width: 80px;
+    max-width: 95px; /* Diperbesar sedikit dari sebelumnya */
     margin: 0 auto 15px auto;
     filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1));
+}
+
+/* Logo Khusus Menu Utama dan Panel Absen (Lebih Besar) */
+#panel-awal .logo-sekolah,
+#panel-absen .logo-sekolah {
+    max-width: 130px; 
+    margin-bottom: 20px;
 }
 
 .portal-title, .judul-absen, .panel-title {
@@ -138,7 +145,7 @@ button {
     width: 100%;
     padding: 15px;
     border: none;
-    border-radius: 16px; /* Lebih rounded */
+    border-radius: 16px; 
     font-size: 15px;
     font-weight: 700;
     cursor: pointer;
@@ -146,34 +153,28 @@ button {
     transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
-button:hover {
-    transform: translateY(-3px);
-}
+button:hover { transform: translateY(-3px); }
+button:active { transform: translateY(1px); }
 
-button:active {
-    transform: translateY(1px);
-}
-
-/* Warna Tua + Efek Glow */
-.btn-primary { background: #991b1b; color: white; box-shadow: 0 6px 16px rgba(153, 27, 27, 0.3); } /* Merah Darah */
+.btn-primary { background: #991b1b; color: white; box-shadow: 0 6px 16px rgba(153, 27, 27, 0.3); } 
 .btn-primary:hover { box-shadow: 0 8px 24px rgba(153, 27, 27, 0.45); background: #7f1d1d; }
 
-.btn-blue { background: #1e3a8a; color: white; box-shadow: 0 6px 16px rgba(30, 58, 138, 0.3); } /* Biru Tua */
+.btn-blue { background: #1e3a8a; color: white; box-shadow: 0 6px 16px rgba(30, 58, 138, 0.3); } 
 .btn-blue:hover { box-shadow: 0 8px 24px rgba(30, 58, 138, 0.45); background: #172554; }
 
 .btn-merah { background: #991b1b; color: white; box-shadow: 0 6px 16px rgba(153, 27, 27, 0.3); }
 .btn-merah:hover { background: #7f1d1d; }
 
-.btn-oren { background: #9a3412; color: white; box-shadow: 0 6px 16px rgba(154, 52, 18, 0.3); } /* Oren Tua */
+.btn-oren { background: #9a3412; color: white; box-shadow: 0 6px 16px rgba(154, 52, 18, 0.3); } 
 .btn-oren:hover { background: #7c2d12; }
 
-.btn-cyan { background: #0f766e; color: white; box-shadow: 0 6px 16px rgba(15, 118, 110, 0.3); } /* Teal Tua */
+.btn-cyan { background: #0f766e; color: white; box-shadow: 0 6px 16px rgba(15, 118, 110, 0.3); } 
 .btn-cyan:hover { background: #115e59; }
 
-.btn-pink-soft { background: #831843; color: white; box-shadow: 0 6px 16px rgba(131, 24, 67, 0.3); } /* Magenta Tua */
+.btn-pink-soft { background: #831843; color: white; box-shadow: 0 6px 16px rgba(131, 24, 67, 0.3); } 
 .btn-pink-soft:hover { background: #701a3d; }
 
-.btn-abu { background: #334155; color: white; box-shadow: 0 6px 16px rgba(51, 65, 85, 0.3); } /* Abu Tua */
+.btn-abu { background: #334155; color: white; box-shadow: 0 6px 16px rgba(51, 65, 85, 0.3); } 
 .btn-abu:hover { background: #1e293b; }
 
 .btn-outline { background: #ffffff; color: #0f172a; border: 2px solid #e2e8f0; }
@@ -227,7 +228,6 @@ table { width: 100%; border-collapse: collapse; min-width: 500px; }
 th { background: #f8fafc; padding: 14px; font-size: 13px; color: #64748b; text-transform: uppercase; font-weight: 700; border-bottom: 1px solid #e2e8f0;}
 td { padding: 14px; font-size: 14px; border-bottom: 1px solid #e2e8f0; color: #1e293b; }
 
-/* Wrapper Khusus Untuk Mendekatkan Jarak Nama & Alpha */
 .table-rank { max-width: 400px; margin: 0 auto; }
 .table-rank table { min-width: 100%; }
 
@@ -256,9 +256,7 @@ td { padding: 14px; font-size: 14px; border-bottom: 1px solid #e2e8f0; color: #1
     stroke-dashoffset: 50;
     animation: drawIcon 0.5s ease forwards;
 }
-@keyframes drawIcon {
-    to { stroke-dashoffset: 0; }
-}
+@keyframes drawIcon { to { stroke-dashoffset: 0; } }
 
 /* ========== KAMERA ========== */
 .camera-wrapper {
@@ -290,7 +288,6 @@ video, canvas { width: 100%; display: block; transform: scaleX(-1); }
 .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
 .modal-header h3 { font-size: 18px; font-weight: 800; color: #0f172a; }
 
-/* Close Button Modern */
 .close-btn { 
     background: #f1f5f9; border: none; width: 36px; height: 36px; 
     border-radius: 50%; cursor: pointer; display: flex; justify-content: center; align-items: center;
