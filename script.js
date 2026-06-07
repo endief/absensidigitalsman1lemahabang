@@ -67,6 +67,17 @@ let dbRekapBulanan = { kelas: {}, siswa: {} };
 let streamKamera = null;
 let currentUser = null; 
 
+// SVG Icon Modern untuk Tabel Status
+const iconCheckSVG = `<svg class="anim-check" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+const iconCrossSVG = `<svg class="anim-cross" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`;
+
+// Helper Render Status Badge
+function getStatusBadge(status) {
+    if (status === 'Hadir') return `<span class="badge-status badge-hadir">${iconCheckSVG} Hadir</span>`;
+    if (status === 'Tidak Hadir') return `<span class="badge-status badge-alpha">${iconCrossSVG} Alpha</span>`;
+    return `<span class="badge-status badge-belum">Belum Absen</span>`;
+}
+
 // ==== LISTENER REAL‑TIME FIREBASE ====
 function initFirebaseListeners() {
     firebase.database().ref('absensi').on('value', (snapshot) => {
@@ -88,7 +99,7 @@ function initFirebaseListeners() {
         if (status === 'ditutup' && absenPanel.classList.contains('active')) {
             switchPanel('panel-awal');
             matikanKamera();
-            Swal.fire({ title: 'Absensi Ditutup', text: 'Siswa tidak bisa absen.', icon: 'warning', timer: 3000, timerProgressBar: true, showConfirmButton: false });
+            Swal.fire({ title: 'Absensi Ditutup', text: 'Siswa tidak bisa absen.', icon: 'warning', timer: 3000, showConfirmButton: false });
         }
     });
 }
@@ -140,7 +151,7 @@ function refreshActiveUI() {
 async function loginUmum() {
     const user = document.getElementById('admin-user').value.trim();
     const pass = document.getElementById('admin-pass').value.trim();
-    if (!user || !pass) return Swal.fire({ title: 'Gagal', text: 'Isi username dan password.', icon: 'warning', timer: 2000, timerProgressBar: true, showConfirmButton: false });
+    if (!user || !pass) return Swal.fire({ title: 'Gagal', text: 'Isi username dan password.', icon: 'warning', timer: 2000, showConfirmButton: false });
 
     showCustomLoading('Memeriksa...', 'Sedang masuk ke sistem');
 
@@ -166,7 +177,7 @@ async function loginUmum() {
         return;
     }
 
-    Swal.fire({ title: 'Login Gagal', text: 'Username atau password salah.', icon: 'error', timer: 2000, timerProgressBar: true, showConfirmButton: false });
+    Swal.fire({ title: 'Login Gagal', text: 'Username atau password salah.', icon: 'error', timer: 2000, showConfirmButton: false });
 }
 
 function logoutUmum() {
@@ -224,16 +235,16 @@ async function tambahAdminKelas() {
     if (adminSnap.exists() || adminKelasSnap.exists()) return Swal.fire({ title: 'Gagal', text: 'Username sudah digunakan.', icon: 'error', timer: 2000, showConfirmButton: false });
     
     await firebase.database().ref('admin_perkelas/' + username).set({ password, kelas });
-    Swal.fire({ title: 'Sukses', text: 'Admin kelas berhasil ditambahkan.', icon: 'success', timer: 2000, showConfirmButton: false });
+    Swal.fire({ title: 'Sukses', text: 'Admin kelas ditambahkan.', icon: 'success', timer: 2000, showConfirmButton: false });
     document.getElementById('admin-baru-user').value = ''; document.getElementById('admin-baru-pass').value = ''; document.getElementById('admin-baru-kelas').value = '';
     renderDaftarAdminKelas();
 }
 
 async function hapusAdminKelas(username) {
-    Swal.fire({ title: 'Hapus Admin?', text: `Admin ${username} akan dihapus.`, icon: 'warning', showCancelButton: true, confirmButtonColor: '#ef4444', confirmButtonText: 'Ya' }).then(async (result) => {
+    Swal.fire({ title: 'Hapus Admin?', text: `Admin ${username} akan dihapus.`, icon: 'warning', showCancelButton: true, confirmButtonColor: '#991b1b', confirmButtonText: 'Ya' }).then(async (result) => {
         if (result.isConfirmed) {
             await firebase.database().ref('admin_perkelas/' + username).remove();
-            Swal.fire({ title: 'Terhapus', text: 'Admin kelas berhasil dihapus.', icon: 'success', timer: 2000, showConfirmButton: false });
+            Swal.fire({ title: 'Terhapus', text: 'Admin dihapus.', icon: 'success', timer: 2000, showConfirmButton: false });
             renderDaftarAdminKelas();
         }
     });
@@ -246,7 +257,7 @@ function renderTabelAdmin() {
     if (dbAbsensi.length === 0) return tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#999;">Belum ada data absensi.</td></tr>`;
     
     dbAbsensi.forEach(data => {
-        let badgeStyle = data.status === 'Hadir' ? 'background-color: #dcfce7; color: #16a34a;' : (data.status === 'Tidak Hadir' ? 'background-color: #fee2e2; color: #ef4444;' : 'background-color: #f1f5f9; color: #64748b;');
+        let badgeHTML = getStatusBadge(data.status);
         let btnFoto = data.foto ? `<button class="btn-small btn-abu" onclick="lihatFotoPreview('${data.foto}')">Lihat</button>` : '-';
         let btnHapus = `<button class="btn-small btn-delete-small" onclick="hapusDataIndividu('${data.id}')">Hapus</button>`;
         let tr = document.createElement('tr');
@@ -254,7 +265,7 @@ function renderTabelAdmin() {
             <td><strong>${data.nama}</strong></td>
             <td>${data.kelas}</td>
             <td>${data.hari}</td>
-            <td><span class="status-badge" style="${badgeStyle}">${data.status}</span></td>
+            <td>${badgeHTML}</td>
             <td>${btnFoto}</td>
             <td><span style="font-size:12px; color:#64748b; font-weight:600;">${data.waktuStr}</span></td>
             <td style="text-align: right;">${btnHapus}</td>
@@ -266,7 +277,7 @@ function renderTabelAdmin() {
 async function hapusDataIndividu(id) {
     const snap = await firebase.database().ref('absensi/' + id).once('value');
     const data = snap.val();
-    Swal.fire({ title: 'Hapus?', text: "Data absensi ini akan dihapus.", icon: 'warning', showCancelButton: true, confirmButtonColor: '#ef4444', confirmButtonText: 'Ya' }).then(async (result) => {
+    Swal.fire({ title: 'Hapus?', text: "Data absensi ini akan dihapus.", icon: 'warning', showCancelButton: true, confirmButtonColor: '#991b1b', confirmButtonText: 'Ya' }).then(async (result) => {
         if (result.isConfirmed) {
             if (data && data.status === 'Tidak Hadir') {
                 const safeNama = sanitizeKey(data.nama); 
@@ -283,7 +294,7 @@ async function hapusDataIndividu(id) {
 }
 
 async function resetSemuaData() {
-    Swal.fire({ title: 'Reset Absensi Harian?', text: "Menghapus seluruh data absensi (Hadir/Tidak Hadir). Rekap Bulanan/Peringkat TIDAK akan terhapus.", icon: 'error', showCancelButton: true, confirmButtonColor: '#ef4444', confirmButtonText: 'Ya, Reset Harian!' }).then(async (result) => {
+    Swal.fire({ title: 'Reset Harian?', text: "Menghapus seluruh absensi. Peringkat Bulanan tetap utuh.", icon: 'error', showCancelButton: true, confirmButtonColor: '#991b1b', confirmButtonText: 'Ya, Reset Harian!' }).then(async (result) => {
         if (result.isConfirmed) {
             const snap = await firebase.database().ref('absensi').once('value');
             const allData = snap.val() || {};
@@ -296,7 +307,7 @@ async function resetSemuaData() {
 }
 
 async function resetRekapBulanan() {
-    Swal.fire({ title: 'Reset Rekap Bulanan?', text: "MENGOSONGKAN peringkat seluruh kelas dan siswa menjadi 0 kembali!", icon: 'warning', showCancelButton: true, confirmButtonColor: '#f59e0b', confirmButtonText: 'Ya, Reset Bulan Ini!' }).then(async (result) => {
+    Swal.fire({ title: 'Reset Bulanan?', text: "Peringkat kelas dan siswa akan di-reset menjadi 0!", icon: 'warning', showCancelButton: true, confirmButtonColor: '#9a3412', confirmButtonText: 'Ya, Reset Bulan Ini!' }).then(async (result) => {
         if (result.isConfirmed) {
             await firebase.database().ref('rekap_bulanan').remove();
             Swal.fire({ title: 'Direset!', text: 'Peringkat bulanan berhasil dikosongkan.', icon: 'success' });
@@ -330,7 +341,7 @@ async function toggleStatusAbsensi() {
 
 async function prosesTutupAbsensi(hariDitutup) {
     closeModal('modal-tutup-absen-hari');
-    showCustomLoading('Memproses...', 'Merekap siswa yang tidak hadir ke Data Bulanan...');
+    showCustomLoading('Memproses...', 'Merekap siswa Alpha ke Peringkat Bulanan...');
     
     try {
         let updates = {};
@@ -371,7 +382,7 @@ async function prosesTutupAbsensi(hariDitutup) {
 
     } catch (error) {
         console.error("Error Tutup Absen:", error);
-        Swal.fire({ title: 'Terjadi Kesalahan', text: 'Gagal merekap data absensi.', icon: 'error' });
+        Swal.fire({ title: 'Kesalahan', text: 'Gagal merekap absensi.', icon: 'error' });
     }
 }
 
@@ -402,14 +413,14 @@ function renderTabelKelas() {
     
     tbody.innerHTML = "";
     dataKelas.forEach(data => {
-        let badgeStyle = data.status === 'Hadir' ? 'background-color: #dcfce7; color: #16a34a;' : (data.status === 'Tidak Hadir' ? 'background-color: #fee2e2; color: #ef4444;' : 'background-color: #f1f5f9; color: #64748b;');
+        let badgeHTML = getStatusBadge(data.status);
         let btnFoto = data.foto ? `<button class="btn-small btn-abu" onclick="lihatFotoPreview('${data.foto}')">Lihat</button>` : '-';
         let btnHapus = `<button class="btn-small btn-delete-small" onclick="hapusDataIndividu('${data.id}')">Hapus</button>`;
         let tr = document.createElement('tr');
         tr.innerHTML = `
             <td><strong>${data.nama}</strong></td>
             <td>${data.hari}</td>
-            <td><span class="status-badge" style="${badgeStyle}">${data.status}</span></td>
+            <td>${badgeHTML}</td>
             <td>${btnFoto}</td>
             <td><span style="font-size:12px; color:#64748b; font-weight:600;">${data.waktuStr}</span></td>
             <td style="text-align: right;">${btnHapus}</td>
@@ -420,7 +431,7 @@ function renderTabelKelas() {
 
 async function resetDataKelas() {
     const kelas = currentUser.kelas;
-    Swal.fire({ title: 'Yakin?', text: `Reset absensi harian kelas ${kelas}?`, icon: 'error', showCancelButton: true, confirmButtonColor: '#ef4444', confirmButtonText: 'Ya!' }).then(async (result) => {
+    Swal.fire({ title: 'Yakin?', text: `Reset absensi kelas ${kelas}?`, icon: 'error', showCancelButton: true, confirmButtonColor: '#991b1b', confirmButtonText: 'Ya!' }).then(async (result) => {
         if (result.isConfirmed) {
             const dataKelas = dbAbsensi.filter(item => item.kelas === kelas);
             const filePaths = dataKelas.map(d => d.filePath).filter(Boolean);
@@ -487,10 +498,10 @@ function renderTabelKehadiran() {
     if (hasilAkhir.length === 0) return tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:#888;">Tidak ada data.</td></tr>`;
     
     hasilAkhir.forEach(item => {
-        let badgeStyle = item.status === 'Hadir' ? 'background-color: #dcfce7; color: #16a34a;' : (item.status === 'Tidak Hadir' ? 'background-color: #fee2e2; color: #ef4444;' : 'background-color: #f1f5f9; color: #64748b;');
+        let badgeHTML = getStatusBadge(item.status);
         let btnFoto = item.foto ? `<button class="btn-small btn-abu" onclick="lihatFotoPreview('${item.foto}')">Lihat</button>` : '-';
         let infoKet = item.keterangan !== "-" ? `<div style="font-size:12px; color:#64748b; margin-top:4px;">${item.keterangan}</div>` : '';
-        tbody.innerHTML += `<tr><td><strong>${item.nama}</strong></td><td><span class="status-badge" style="${badgeStyle}">${item.status}</span></td><td>${btnFoto} ${infoKet}</td></tr>`;
+        tbody.innerHTML += `<tr><td><strong>${item.nama}</strong></td><td>${badgeHTML}</td><td>${btnFoto} ${infoKet}</td></tr>`;
     });
 }
 
@@ -520,10 +531,10 @@ function renderTabelKehadiranKelas() {
     
     tbody.innerHTML = "";
     hasilAkhir.forEach(item => {
-        let badgeStyle = item.status === 'Hadir' ? 'background-color: #dcfce7; color: #16a34a;' : (item.status === 'Tidak Hadir' ? 'background-color: #fee2e2; color: #ef4444;' : 'background-color: #f1f5f9; color: #64748b;');
+        let badgeHTML = getStatusBadge(item.status);
         let btnFoto = item.foto ? `<button class="btn-small btn-abu" onclick="lihatFotoPreview('${item.foto}')">Lihat</button>` : '-';
         let infoKet = item.keterangan !== "-" ? `<div style="font-size:12px; color:#64748b; margin-top:4px;">${item.keterangan}</div>` : '';
-        tbody.innerHTML += `<tr><td><strong>${item.nama}</strong></td><td><span class="status-badge" style="${badgeStyle}">${item.status}</span></td><td>${btnFoto} ${infoKet}</td></tr>`;
+        tbody.innerHTML += `<tr><td><strong>${item.nama}</strong></td><td>${badgeHTML}</td><td>${btnFoto} ${infoKet}</td></tr>`;
     });
 }
 
@@ -542,7 +553,7 @@ function renderPeringkatKelas() {
     tbody.innerHTML = "";
     stats.forEach((item, index) => {
         let rankMedal = index === 0 ? "🥇" : (index === 1 ? "🥈" : (index === 2 ? "🥉" : (index + 1)));
-        tbody.innerHTML += `<tr><td style="text-align:center; font-weight:bold; font-size:18px;">${rankMedal}</td><td><strong style="font-size:15px;">${item.kelas}</strong></td><td style="text-align:center;"><span style="color:#ef4444; font-weight:bold; font-size:16px;">${item.alpha}</span></td></tr>`;
+        tbody.innerHTML += `<tr><td style="text-align:center; font-weight:bold; font-size:18px;">${rankMedal}</td><td><strong style="font-size:15px;">${item.kelas}</strong></td><td style="text-align:center;"><span class="badge-status badge-alpha">${iconCrossSVG} ${item.alpha}</span></td></tr>`;
     });
 }
 
@@ -586,7 +597,7 @@ function renderPeringkatSiswa() {
     tbody.innerHTML = "";
     stats.forEach((item, index) => {
         let rankMedal = index === 0 ? "🥇" : (index === 1 ? "🥈" : (index === 2 ? "🥉" : (index + 1)));
-        tbody.innerHTML += `<tr><td style="text-align:center; font-weight:bold; font-size:16px;">${rankMedal}</td><td><strong>${item.nama}</strong><br><small style="color:#64748b;">${item.kelas}</small></td><td style="text-align:center;"><span style="color:#ef4444; font-weight:bold;">${item.alpha}</span></td></tr>`;
+        tbody.innerHTML += `<tr><td style="text-align:center; font-weight:bold; font-size:16px;">${rankMedal}</td><td><strong>${item.nama}</strong><br><small style="color:#64748b;">${item.kelas}</small></td><td style="text-align:center;"><span class="badge-status badge-alpha">${iconCrossSVG} ${item.alpha}</span></td></tr>`;
     });
 }
 
@@ -610,7 +621,7 @@ function renderPeringkatSiswaKelas() {
     tbody.innerHTML = "";
     stats.forEach((item, index) => {
         let rankMedal = index === 0 ? "🥇" : (index === 1 ? "🥈" : (index === 2 ? "🥉" : (index + 1)));
-        tbody.innerHTML += `<tr><td style="text-align:center; font-weight:bold; font-size:16px;">${rankMedal}</td><td><strong>${item.nama}</strong></td><td style="text-align:center;"><span style="color:#ef4444; font-weight:bold;">${item.alpha}</span></td></tr>`;
+        tbody.innerHTML += `<tr><td style="text-align:center; font-weight:bold; font-size:16px;">${rankMedal}</td><td><strong>${item.nama}</strong></td><td style="text-align:center;"><span class="badge-status badge-alpha">${iconCrossSVG} ${item.alpha}</span></td></tr>`;
     });
 }
 
@@ -659,7 +670,8 @@ function renderNama(filterText = "") {
         div.className = 'name-item';
         const sudahAbsen = sudahAbsenMap.has(nama);
         if (sudahAbsen) {
-            div.innerHTML = `${nama} <span style="float:right; color:#10b981;">✓ Tercatat</span>`;
+            // Menggunakan SVG Ikon Centang Modern
+            div.innerHTML = `${nama} <span style="display:flex; align-items:center; color:#16a34a; font-weight:700;">${iconCheckSVG} <span style="margin-left:4px;">Tercatat</span></span>`;
             div.classList.add('disabled');
         } else {
             div.innerText = nama;
@@ -678,7 +690,7 @@ async function mulaiKamera() {
         document.getElementById('video-kamera').srcObject = streamKamera; document.getElementById('video-kamera').classList.remove('hidden');
         document.getElementById('canvas-kamera').classList.add('hidden'); document.getElementById('btn-capture').classList.remove('hidden'); document.getElementById('btn-retake').classList.add('hidden');
     } catch (err) {
-        Swal.fire({ title: 'Akses Ditolak', text: 'Izinkan browser menggunakan kamera untuk verifikasi.', icon: 'error', timer: 3000, showConfirmButton: false });
+        Swal.fire({ title: 'Akses Ditolak', text: 'Izinkan browser menggunakan kamera.', icon: 'error', timer: 3000, showConfirmButton: false });
     }
 }
 function matikanKamera() { if (streamKamera) streamKamera.getTracks().forEach(track => track.stop()); }
