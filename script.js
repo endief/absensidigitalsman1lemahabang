@@ -1,3 +1,20 @@
+// ==== FUNGSI CUSTOM LOADING (3 BOLA LOMPAT) ====
+function showCustomLoading(title, text) {
+    Swal.fire({
+        title: title,
+        html: `
+            <div class="mz-loader-container">
+                <div class="mz-loader">
+                    <span></span><span></span><span></span>
+                </div>
+                <div class="mz-text">${text}</div>
+            </div>
+        `,
+        allowOutsideClick: false,
+        showConfirmButton: false
+    });
+}
+
 // ==== FUNGSI TOGGLE PASSWORD MATA ====
 function togglePassword(inputId, iconDiv) {
     const input = document.getElementById(inputId);
@@ -71,14 +88,7 @@ function initFirebaseListeners() {
         if (status === 'ditutup' && absenPanel.classList.contains('active')) {
             switchPanel('panel-awal');
             matikanKamera();
-            Swal.fire({
-                title: 'Absensi Ditutup',
-                text: 'Siswa tidak bisa absen.',
-                icon: 'warning',
-                timer: 3000,
-                timerProgressBar: true,
-                showConfirmButton: false
-            });
+            Swal.fire({ title: 'Absensi Ditutup', text: 'Siswa tidak bisa absen.', icon: 'warning', timer: 3000, timerProgressBar: true, showConfirmButton: false });
         }
     });
 }
@@ -93,10 +103,8 @@ function hitungJarak(lat1, lon1, lat2, lon2) {
     const R = 6371e3;
     const dLat = (lat2 - lat1) * (Math.PI / 180);
     const dLon = (lon2 - lon1) * (Math.PI / 180);
-    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-              Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) * Math.sin(dLon/2) * Math.sin(dLon/2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    return R * c; 
+    const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) * Math.sin(dLon/2) * Math.sin(dLon/2);
+    return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a))); 
 }
 
 function verifikasiLokasi() {
@@ -115,27 +123,17 @@ function verifikasiLokasi() {
 }
 
 function refreshActiveUI() {
-    const dashboardAdmin = document.getElementById('panel-dashboard-admin');
-    const dashboardKelas = document.getElementById('panel-dashboard-kelas');
-    const absenPanel = document.getElementById('panel-absen');
-    const modalKehadiran = document.getElementById('modal-kehadiran');
-    const modalKehadiranKelas = document.getElementById('modal-kehadiran-kelas');
-    const modalRankKelas = document.getElementById('modal-peringkat-kelas');
-    const modalRankSiswa = document.getElementById('modal-peringkat-siswa');
-    const modalRankSiswaKls = document.getElementById('modal-peringkat-siswa-kelas');
-
-    if (dashboardAdmin.classList.contains('active')) renderTabelAdmin();
-    if (dashboardKelas.classList.contains('active')) renderTabelKelas();
-    if (absenPanel.classList.contains('active')) {
+    if (document.getElementById('panel-dashboard-admin').classList.contains('active')) renderTabelAdmin();
+    if (document.getElementById('panel-dashboard-kelas').classList.contains('active')) renderTabelKelas();
+    if (document.getElementById('panel-absen').classList.contains('active')) {
         const kelas = document.getElementById('kelas').value;
         if (kelas) renderNama(document.getElementById('search-nama').value);
     }
-    if (modalKehadiran.classList.contains('show')) renderTabelKehadiran();
-    if (modalKehadiranKelas.classList.contains('show')) renderTabelKehadiranKelas();
-    
-    if (modalRankKelas.classList.contains('show')) renderPeringkatKelas();
-    if (modalRankSiswa.classList.contains('show')) renderPeringkatSiswa();
-    if (modalRankSiswaKls.classList.contains('show')) renderPeringkatSiswaKelas();
+    if (document.getElementById('modal-kehadiran').classList.contains('show')) renderTabelKehadiran();
+    if (document.getElementById('modal-kehadiran-kelas').classList.contains('show')) renderTabelKehadiranKelas();
+    if (document.getElementById('modal-peringkat-kelas').classList.contains('show')) renderPeringkatKelas();
+    if (document.getElementById('modal-peringkat-siswa').classList.contains('show')) renderPeringkatSiswa();
+    if (document.getElementById('modal-peringkat-siswa-kelas').classList.contains('show')) renderPeringkatSiswaKelas();
 }
 
 // ==== FUNGSI LOGIN UMUM ====
@@ -144,23 +142,24 @@ async function loginUmum() {
     const pass = document.getElementById('admin-pass').value.trim();
     if (!user || !pass) return Swal.fire({ title: 'Gagal', text: 'Isi username dan password.', icon: 'warning', timer: 2000, timerProgressBar: true, showConfirmButton: false });
 
+    showCustomLoading('Memeriksa...', 'Sedang masuk ke sistem');
+
     const adminSnap = await firebase.database().ref('admin/' + user).once('value');
     if (adminSnap.exists() && adminSnap.val().password === pass) {
+        Swal.close();
         currentUser = { role: 'admin' };
-        document.getElementById('admin-user').value = '';
-        document.getElementById('admin-pass').value = '';
+        document.getElementById('admin-user').value = ''; document.getElementById('admin-pass').value = '';
         switchPanel('panel-dashboard-admin', true);
-        renderTabelAdmin();
-        updateTeksTombolBukaTutup();
+        renderTabelAdmin(); updateTeksTombolBukaTutup();
         return;
     }
 
     const adminKelasSnap = await firebase.database().ref('admin_perkelas/' + user).once('value');
     if (adminKelasSnap.exists() && adminKelasSnap.val().password === pass) {
+        Swal.close();
         const data = adminKelasSnap.val();
         currentUser = { role: 'admin_kelas', username: user, kelas: data.kelas };
-        document.getElementById('admin-user').value = '';
-        document.getElementById('admin-pass').value = '';
+        document.getElementById('admin-user').value = ''; document.getElementById('admin-pass').value = '';
         switchPanel('panel-dashboard-kelas', true);
         document.getElementById('admin-kelas-display').innerText = `Admin Kelas ${data.kelas}`;
         renderTabelKelas();
@@ -182,7 +181,6 @@ function bukaModalKelolaAdminKelas() {
     generateAdminKelasPilihList();
     document.getElementById('admin-baru-kelas').value = '';
     document.getElementById('teks-admin-baru-kelas').innerText = '-- Pilih Kelas --';
-    document.getElementById('btn-admin-baru-kelas').classList.remove('selected');
 }
 
 async function renderDaftarAdminKelas() {
@@ -193,8 +191,8 @@ async function renderDaftarAdminKelas() {
     if (adminArray.length === 0) return container.innerHTML = '<p style="color:#888; text-align:center;">Belum ada admin perkelas.</p>';
     
     container.innerHTML = adminArray.map(a => `
-        <div style="display:flex; justify-content:space-between; align-items:center; padding:10px; border:1px solid var(--border-light); border-radius:12px; margin-bottom:8px;">
-            <div><strong>${a.username}</strong><br><small style="color:#64748b;">Kelas: ${a.kelas}</small></div>
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:10px; border:1px solid #e2e8f0; border-radius:12px; margin-bottom:8px;">
+            <div><strong style="color:#1e293b;">${a.username}</strong><br><small style="color:#64748b;">Kelas: ${a.kelas}</small></div>
             <button class="btn-small btn-delete-small" onclick="hapusAdminKelas('${a.username}')">Hapus</button>
         </div>
     `).join('');
@@ -212,7 +210,6 @@ function generateAdminKelasPilihList() {
 function pilihAdminBaruKelas(kelas) {
     document.getElementById('admin-baru-kelas').value = kelas;
     document.getElementById('teks-admin-baru-kelas').innerText = kelas;
-    document.getElementById('btn-admin-baru-kelas').classList.add('selected');
     closeModal('modal-admin-kelas-pilih');
 }
 
@@ -220,17 +217,15 @@ async function tambahAdminKelas() {
     const username = document.getElementById('admin-baru-user').value.trim();
     const password = document.getElementById('admin-baru-pass').value.trim();
     const kelas = document.getElementById('admin-baru-kelas').value;
-    if (!username || !password || !kelas) return Swal.fire({ title: 'Gagal', text: 'Isi semua data.', icon: 'warning', timer: 2000, timerProgressBar: true, showConfirmButton: false });
+    if (!username || !password || !kelas) return Swal.fire({ title: 'Gagal', text: 'Isi semua data.', icon: 'warning', timer: 2000, showConfirmButton: false });
     
     const adminSnap = await firebase.database().ref('admin/' + username).once('value');
     const adminKelasSnap = await firebase.database().ref('admin_perkelas/' + username).once('value');
-    if (adminSnap.exists() || adminKelasSnap.exists()) return Swal.fire({ title: 'Gagal', text: 'Username sudah digunakan.', icon: 'error', timer: 2000, timerProgressBar: true, showConfirmButton: false });
+    if (adminSnap.exists() || adminKelasSnap.exists()) return Swal.fire({ title: 'Gagal', text: 'Username sudah digunakan.', icon: 'error', timer: 2000, showConfirmButton: false });
     
     await firebase.database().ref('admin_perkelas/' + username).set({ password, kelas });
-    Swal.fire({ title: 'Sukses', text: 'Admin kelas berhasil ditambahkan.', icon: 'success', timer: 2000, timerProgressBar: true, showConfirmButton: false });
-    document.getElementById('admin-baru-user').value = '';
-    document.getElementById('admin-baru-pass').value = '';
-    document.getElementById('admin-baru-kelas').value = '';
+    Swal.fire({ title: 'Sukses', text: 'Admin kelas berhasil ditambahkan.', icon: 'success', timer: 2000, showConfirmButton: false });
+    document.getElementById('admin-baru-user').value = ''; document.getElementById('admin-baru-pass').value = ''; document.getElementById('admin-baru-kelas').value = '';
     renderDaftarAdminKelas();
 }
 
@@ -238,7 +233,7 @@ async function hapusAdminKelas(username) {
     Swal.fire({ title: 'Hapus Admin?', text: `Admin ${username} akan dihapus.`, icon: 'warning', showCancelButton: true, confirmButtonColor: '#ef4444', confirmButtonText: 'Ya' }).then(async (result) => {
         if (result.isConfirmed) {
             await firebase.database().ref('admin_perkelas/' + username).remove();
-            Swal.fire({ title: 'Terhapus', text: 'Admin kelas berhasil dihapus.', icon: 'success', timer: 2000, timerProgressBar: true, showConfirmButton: false });
+            Swal.fire({ title: 'Terhapus', text: 'Admin kelas berhasil dihapus.', icon: 'success', timer: 2000, showConfirmButton: false });
             renderDaftarAdminKelas();
         }
     });
@@ -248,11 +243,11 @@ async function hapusAdminKelas(username) {
 function renderTabelAdmin() {
     const tbody = document.getElementById('tbody-rekap');
     tbody.innerHTML = "";
-    if (dbAbsensi.length === 0) return tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#999;">Belum ada data absensi yang masuk.</td></tr>`;
+    if (dbAbsensi.length === 0) return tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#999;">Belum ada data absensi.</td></tr>`;
     
     dbAbsensi.forEach(data => {
-        let badgeStyle = data.status === 'Hadir' ? 'background-color: #10b981; color: white;' : (data.status === 'Tidak Hadir' ? 'background-color: #ef4444; color: white;' : 'background-color: #64748b; color: white;');
-        let btnFoto = data.foto ? `<button class="btn-small btn-foto-small" onclick="lihatFotoPreview('${data.foto}')">Lihat</button>` : '-';
+        let badgeStyle = data.status === 'Hadir' ? 'background-color: #dcfce7; color: #16a34a;' : (data.status === 'Tidak Hadir' ? 'background-color: #fee2e2; color: #ef4444;' : 'background-color: #f1f5f9; color: #64748b;');
+        let btnFoto = data.foto ? `<button class="btn-small btn-abu" onclick="lihatFotoPreview('${data.foto}')">Lihat</button>` : '-';
         let btnHapus = `<button class="btn-small btn-delete-small" onclick="hapusDataIndividu('${data.id}')">Hapus</button>`;
         let tr = document.createElement('tr');
         tr.innerHTML = `
@@ -280,7 +275,6 @@ async function hapusDataIndividu(id) {
                 if(currentSiswa > 0) firebase.database().ref(`rekap_bulanan/siswa/${data.kelas}/${safeNama}`).set(currentSiswa - 1);
                 if(currentKelas > 0) firebase.database().ref(`rekap_bulanan/kelas/${data.kelas}`).set(currentKelas - 1);
             }
-
             if (data && data.filePath) await hapusFileDariSupabase(data.filePath);
             await firebase.database().ref('absensi/' + id).remove();
             Swal.fire({ title: 'Terhapus!', text: 'Data berhasil dihapus.', icon: 'success' });
@@ -289,35 +283,20 @@ async function hapusDataIndividu(id) {
 }
 
 async function resetSemuaData() {
-    Swal.fire({
-        title: 'Reset Absensi Harian?',
-        text: "Ini akan menghapus seluruh data absensi (Hadir/Tidak Hadir). Tenang saja, Data Rekap Bulanan/Peringkat TIDAK akan terhapus.",
-        icon: 'error',
-        showCancelButton: true,
-        confirmButtonColor: '#ef4444',
-        confirmButtonText: 'Ya, Reset Harian!'
-    }).then(async (result) => {
+    Swal.fire({ title: 'Reset Absensi Harian?', text: "Menghapus seluruh data absensi (Hadir/Tidak Hadir). Rekap Bulanan/Peringkat TIDAK akan terhapus.", icon: 'error', showCancelButton: true, confirmButtonColor: '#ef4444', confirmButtonText: 'Ya, Reset Harian!' }).then(async (result) => {
         if (result.isConfirmed) {
             const snap = await firebase.database().ref('absensi').once('value');
             const allData = snap.val() || {};
             const filePaths = Object.values(allData).map(d => d.filePath).filter(Boolean);
             if (filePaths.length > 0) await supabaseClient.storage.from('foto-absensi').remove(filePaths);
             await firebase.database().ref('absensi').remove();
-            Swal.fire({ title: 'Direset!', text: 'Data harian dihapus. Rekap bulanan tetap aman.', icon: 'success' });
+            Swal.fire({ title: 'Direset!', text: 'Data harian dihapus.', icon: 'success' });
         }
     });
 }
 
-// RESET REKAP BULANAN
 async function resetRekapBulanan() {
-    Swal.fire({
-        title: 'Reset Rekap Bulanan?',
-        text: "Ini akan MENGOSONGKAN peringkat seluruh kelas dan siswa menjadi 0 kembali! Lakukan hanya saat pergantian bulan baru.",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#f59e0b',
-        confirmButtonText: 'Ya, Reset Bulan Ini!'
-    }).then(async (result) => {
+    Swal.fire({ title: 'Reset Rekap Bulanan?', text: "MENGOSONGKAN peringkat seluruh kelas dan siswa menjadi 0 kembali!", icon: 'warning', showCancelButton: true, confirmButtonColor: '#f59e0b', confirmButtonText: 'Ya, Reset Bulan Ini!' }).then(async (result) => {
         if (result.isConfirmed) {
             await firebase.database().ref('rekap_bulanan').remove();
             Swal.fire({ title: 'Direset!', text: 'Peringkat bulanan berhasil dikosongkan.', icon: 'success' });
@@ -326,10 +305,8 @@ async function resetRekapBulanan() {
 }
 
 function downloadExcel() {
-    if (dbAbsensi.length === 0) return Swal.fire({ title: 'Kosong', text: 'Belum ada data.', icon: 'info', timer: 2500, timerProgressBar: true, showConfirmButton: false });
-    const dataToExport = dbAbsensi.map(item => ({
-        "Nama Siswa": item.nama, "Kelas": item.kelas, "Hari": item.hari, "Status": item.status, "Alasan": item.keterangan || "Bukti", "Tanggal & Jam": item.waktuStr
-    }));
+    if (dbAbsensi.length === 0) return Swal.fire({ title: 'Kosong', text: 'Belum ada data.', icon: 'info', timer: 2500, showConfirmButton: false });
+    const dataToExport = dbAbsensi.map(item => ({ "Nama Siswa": item.nama, "Kelas": item.kelas, "Hari": item.hari, "Status": item.status, "Alasan": item.keterangan || "Bukti", "Tanggal & Jam": item.waktuStr }));
     const worksheet = XLSX.utils.json_to_sheet(dataToExport);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Rekap Absen");
@@ -344,7 +321,7 @@ async function toggleStatusAbsensi() {
     
     if (isClosed) {
         await ref.set('dibuka');
-        Swal.fire({ title: 'Absensi Dibuka', text: 'Siswa dapat melakukan absen kembali.', icon: 'success', timer: 3000, timerProgressBar: true, showConfirmButton: false });
+        Swal.fire({ title: 'Absensi Dibuka', text: 'Siswa dapat melakukan absen kembali.', icon: 'success', timer: 3000, showConfirmButton: false });
     } else {
         openModal('modal-tutup-absen-hari');
     }
@@ -353,7 +330,7 @@ async function toggleStatusAbsensi() {
 
 async function prosesTutupAbsensi(hariDitutup) {
     closeModal('modal-tutup-absen-hari');
-    Swal.fire({ title: 'Memproses...', text: 'Merekap siswa yang tidak hadir ke Data Bulanan...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
+    showCustomLoading('Memproses...', 'Merekap siswa yang tidak hadir ke Data Bulanan...');
     
     try {
         let updates = {};
@@ -376,7 +353,6 @@ async function prosesTutupAbsensi(hariDitutup) {
                     updates['absensi/' + uniqueId] = {
                         kelas: kls, hari: hariDitutup, nama: nama, status: 'Tidak Hadir', keterangan: 'Ditutup Sistem (Alpha)', foto: '', filePath: '', waktuStr: waktuStr, lockKey: `absen_${kls}_${nama}_${hariDitutup}`
                     };
-
                     const safeNama = sanitizeKey(nama); 
                     tempSiswa[kls][safeNama] = (tempSiswa[kls][safeNama] || 0) + 1;
                     tempKelas[kls]++;
@@ -391,11 +367,11 @@ async function prosesTutupAbsensi(hariDitutup) {
         await firebase.database().ref('settings/status_absen').set('ditutup');
         
         updateTeksTombolBukaTutup();
-        Swal.fire({ title: 'Absensi Ditutup', text: `Siswa yang belum absen hari ${hariDitutup} otomatis Alpha. Data Rekap Bulanan telah terupdate.`, icon: 'success', timer: 4500, timerProgressBar: true, showConfirmButton: false });
+        Swal.fire({ title: 'Absensi Ditutup', text: `Siswa yang belum absen hari ${hariDitutup} otomatis Alpha.`, icon: 'success', timer: 4500, showConfirmButton: false });
 
     } catch (error) {
         console.error("Error Tutup Absen:", error);
-        Swal.fire({ title: 'Terjadi Kesalahan', text: 'Gagal merekap data absensi. Error di jaringan atau Database.', icon: 'error' });
+        Swal.fire({ title: 'Terjadi Kesalahan', text: 'Gagal merekap data absensi.', icon: 'error' });
     }
 }
 
@@ -404,16 +380,16 @@ async function updateTeksTombolBukaTutup() {
     const isClosed = snapshot.val() === 'ditutup';
     const btn = document.getElementById('btn-toggle-absen');
     if (isClosed) {
-        btn.innerText = "Buka Absensi"; btn.style.background = "#10b981"; btn.style.color = "#fff";
+        btn.innerText = "Buka Absensi"; btn.className = "btn-cyan";
     } else {
-        btn.innerText = "Tutup Absensi"; btn.style.background = "#f59e0b"; btn.style.color = "#fff";
+        btn.innerText = "Tutup Absensi"; btn.className = "btn-oren";
     }
 }
 
 async function cekDanBukaAbsen() {
     const snapshot = await firebase.database().ref('settings/status_absen').once('value');
     const isClosed = snapshot.val() === 'ditutup';
-    if (isClosed) Swal.fire({ title: 'Tidak bisa absen', text: 'Absensi telah ditutup.', icon: 'error', timer: 3000, timerProgressBar: true, showConfirmButton: false });
+    if (isClosed) Swal.fire({ title: 'Absensi Ditutup', text: 'Sesi absen saat ini sudah tidak tersedia.', icon: 'error', timer: 3000, showConfirmButton: false });
     else switchPanel('panel-absen');
 }
 
@@ -426,8 +402,8 @@ function renderTabelKelas() {
     
     tbody.innerHTML = "";
     dataKelas.forEach(data => {
-        let badgeStyle = data.status === 'Hadir' ? 'background-color: #10b981; color: white;' : (data.status === 'Tidak Hadir' ? 'background-color: #ef4444; color: white;' : 'background-color: #64748b; color: white;');
-        let btnFoto = data.foto ? `<button class="btn-small btn-foto-small" onclick="lihatFotoPreview('${data.foto}')">Lihat</button>` : '-';
+        let badgeStyle = data.status === 'Hadir' ? 'background-color: #dcfce7; color: #16a34a;' : (data.status === 'Tidak Hadir' ? 'background-color: #fee2e2; color: #ef4444;' : 'background-color: #f1f5f9; color: #64748b;');
+        let btnFoto = data.foto ? `<button class="btn-small btn-abu" onclick="lihatFotoPreview('${data.foto}')">Lihat</button>` : '-';
         let btnHapus = `<button class="btn-small btn-delete-small" onclick="hapusDataIndividu('${data.id}')">Hapus</button>`;
         let tr = document.createElement('tr');
         tr.innerHTML = `
@@ -444,13 +420,13 @@ function renderTabelKelas() {
 
 async function resetDataKelas() {
     const kelas = currentUser.kelas;
-    Swal.fire({ title: 'Yakin?', text: `Reset absensi harian kelas ${kelas}? Data Rekap Bulanan tetap aman.`, icon: 'error', showCancelButton: true, confirmButtonColor: '#ef4444', confirmButtonText: 'Ya!' }).then(async (result) => {
+    Swal.fire({ title: 'Yakin?', text: `Reset absensi harian kelas ${kelas}?`, icon: 'error', showCancelButton: true, confirmButtonColor: '#ef4444', confirmButtonText: 'Ya!' }).then(async (result) => {
         if (result.isConfirmed) {
             const dataKelas = dbAbsensi.filter(item => item.kelas === kelas);
             const filePaths = dataKelas.map(d => d.filePath).filter(Boolean);
             if (filePaths.length > 0) await supabaseClient.storage.from('foto-absensi').remove(filePaths);
             for (const item of dataKelas) await firebase.database().ref('absensi/' + item.id).remove();
-            Swal.fire({ title: 'Direset!', text: `Data harian kelas ${kelas} dihapus.`, icon: 'success' });
+            Swal.fire({ title: 'Direset!', text: `Data harian dihapus.`, icon: 'success' });
         }
     });
 }
@@ -458,10 +434,8 @@ async function resetDataKelas() {
 function downloadExcelKelas() {
     const kelas = currentUser.kelas;
     const dataKelas = dbAbsensi.filter(item => item.kelas === kelas);
-    if (dataKelas.length === 0) return Swal.fire({ title: 'Kosong', text: 'Tidak ada data.', icon: 'info', timer: 2500, timerProgressBar: true, showConfirmButton: false });
-    const dataToExport = dataKelas.map(item => ({
-        "Nama Siswa": item.nama, "Hari": item.hari, "Status": item.status, "Alasan": item.keterangan || "Bukti", "Tanggal & Jam": item.waktuStr
-    }));
+    if (dataKelas.length === 0) return Swal.fire({ title: 'Kosong', text: 'Tidak ada data.', icon: 'info', timer: 2500, showConfirmButton: false });
+    const dataToExport = dataKelas.map(item => ({ "Nama Siswa": item.nama, "Hari": item.hari, "Status": item.status, "Alasan": item.keterangan || "Bukti", "Tanggal & Jam": item.waktuStr }));
     const worksheet = XLSX.utils.json_to_sheet(dataToExport);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Rekap " + kelas);
@@ -471,10 +445,10 @@ function downloadExcelKelas() {
 // ==== MODAL KEHADIRAN ADMIN UTAMA ====
 function bukaModalKehadiran() {
     openModal('modal-kehadiran');
-    document.getElementById('filter-admin-kelas-val').value = ""; document.getElementById('teks-admin-kelas').innerText = "Pilih Kelas..."; document.getElementById('btn-admin-kelas').classList.remove('selected');
-    document.getElementById('filter-admin-hari-val').value = ""; document.getElementById('teks-admin-hari').innerText = "Pilih Hari..."; document.getElementById('btn-admin-hari').classList.remove('selected');
-    document.getElementById('filter-admin-status-val').value = "Semua"; document.getElementById('teks-admin-status').innerText = "Semua"; document.getElementById('btn-admin-status').classList.remove('selected');
-    document.getElementById('tbody-filter-kehadiran').innerHTML = '<tr><td colspan="3" style="text-align:center; color:#888;">Silakan pilih Kelas dan Hari di atas.</td></tr>';
+    document.getElementById('filter-admin-kelas-val').value = ""; document.getElementById('teks-admin-kelas').innerText = "Pilih Kelas...";
+    document.getElementById('filter-admin-hari-val').value = ""; document.getElementById('teks-admin-hari').innerText = "Pilih Hari...";
+    document.getElementById('filter-admin-status-val').value = "Semua"; document.getElementById('teks-admin-status').innerText = "Semua";
+    document.getElementById('tbody-filter-kehadiran').innerHTML = '<tr><td colspan="3" style="text-align:center; color:#888;">Silakan pilih Kelas dan Hari.</td></tr>';
     generateAdminKelasList();
 }
 
@@ -487,18 +461,9 @@ function generateAdminKelasList() {
     }
 }
 
-function pilihAdminKelas(kelas) {
-    document.getElementById('filter-admin-kelas-val').value = kelas; document.getElementById('teks-admin-kelas').innerText = kelas; document.getElementById('btn-admin-kelas').classList.add('selected');
-    closeModal('modal-admin-kelas'); renderTabelKehadiran();
-}
-function pilihAdminHari(hari) {
-    document.getElementById('filter-admin-hari-val').value = hari; document.getElementById('teks-admin-hari').innerText = hari; document.getElementById('btn-admin-hari').classList.add('selected');
-    closeModal('modal-admin-hari'); renderTabelKehadiran();
-}
-function pilihAdminStatus(status) {
-    document.getElementById('filter-admin-status-val').value = status; document.getElementById('teks-admin-status').innerText = status; document.getElementById('btn-admin-status').classList.add('selected');
-    closeModal('modal-admin-status'); renderTabelKehadiran();
-}
+function pilihAdminKelas(kelas) { document.getElementById('filter-admin-kelas-val').value = kelas; document.getElementById('teks-admin-kelas').innerText = kelas; closeModal('modal-admin-kelas'); renderTabelKehadiran(); }
+function pilihAdminHari(hari) { document.getElementById('filter-admin-hari-val').value = hari; document.getElementById('teks-admin-hari').innerText = hari; closeModal('modal-admin-hari'); renderTabelKehadiran(); }
+function pilihAdminStatus(status) { document.getElementById('filter-admin-status-val').value = status; document.getElementById('teks-admin-status').innerText = status; closeModal('modal-admin-status'); renderTabelKehadiran(); }
 
 function renderTabelKehadiran() {
     const adminFilterKelas = document.getElementById('filter-admin-kelas-val').value;
@@ -519,12 +484,12 @@ function renderTabelKehadiran() {
     if (adminFilterStatus !== 'Semua') hasilAkhir = hasilAkhir.filter(item => item.status === adminFilterStatus);
     
     tbody.innerHTML = "";
-    if (hasilAkhir.length === 0) return tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:#888;">Tidak ada data pada kategori ini.</td></tr>`;
+    if (hasilAkhir.length === 0) return tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:#888;">Tidak ada data.</td></tr>`;
     
     hasilAkhir.forEach(item => {
-        let badgeStyle = item.status === 'Hadir' ? 'background-color: #10b981; color: white;' : (item.status === 'Tidak Hadir' ? 'background-color: #ef4444; color: white;' : 'background-color: #64748b; color: white;');
-        let btnFoto = item.foto ? `<button class="btn-small btn-foto-small" onclick="lihatFotoPreview('${item.foto}')">Lihat</button>` : '-';
-        let infoKet = item.keterangan !== "-" ? `<div style="font-size:12px; color:#666; margin-top:5px; font-weight:500;">${item.keterangan}</div>` : '';
+        let badgeStyle = item.status === 'Hadir' ? 'background-color: #dcfce7; color: #16a34a;' : (item.status === 'Tidak Hadir' ? 'background-color: #fee2e2; color: #ef4444;' : 'background-color: #f1f5f9; color: #64748b;');
+        let btnFoto = item.foto ? `<button class="btn-small btn-abu" onclick="lihatFotoPreview('${item.foto}')">Lihat</button>` : '-';
+        let infoKet = item.keterangan !== "-" ? `<div style="font-size:12px; color:#64748b; margin-top:4px;">${item.keterangan}</div>` : '';
         tbody.innerHTML += `<tr><td><strong>${item.nama}</strong></td><td><span class="status-badge" style="${badgeStyle}">${item.status}</span></td><td>${btnFoto} ${infoKet}</td></tr>`;
     });
 }
@@ -532,14 +497,11 @@ function renderTabelKehadiran() {
 // ==== MODAL KEHADIRAN ADMIN KELAS ====
 function bukaModalKehadiranKelas() {
     openModal('modal-kehadiran-kelas');
-    document.getElementById('filter-kelas-hari-val').value = ""; document.getElementById('teks-kelas-hari').innerText = "Pilih Hari..."; document.getElementById('btn-kelas-hari').classList.remove('selected');
+    document.getElementById('filter-kelas-hari-val').value = ""; document.getElementById('teks-kelas-hari').innerText = "Pilih Hari...";
     document.getElementById('tbody-filter-kelas').innerHTML = '<tr><td colspan="3" style="text-align:center; color:#888;">Silakan pilih Hari.</td></tr>';
 }
 
-function pilihKelasHari(hari) {
-    document.getElementById('filter-kelas-hari-val').value = hari; document.getElementById('teks-kelas-hari').innerText = hari; document.getElementById('btn-kelas-hari').classList.add('selected');
-    closeModal('modal-kelas-hari'); renderTabelKehadiranKelas();
-}
+function pilihKelasHari(hari) { document.getElementById('filter-kelas-hari-val').value = hari; document.getElementById('teks-kelas-hari').innerText = hari; closeModal('modal-kelas-hari'); renderTabelKehadiranKelas(); }
 
 function renderTabelKehadiranKelas() {
     const kelas = currentUser.kelas;
@@ -558,17 +520,15 @@ function renderTabelKehadiranKelas() {
     
     tbody.innerHTML = "";
     hasilAkhir.forEach(item => {
-        let badgeStyle = item.status === 'Hadir' ? 'background-color: #10b981; color: white;' : (item.status === 'Tidak Hadir' ? 'background-color: #ef4444; color: white;' : 'background-color: #64748b; color: white;');
-        let btnFoto = item.foto ? `<button class="btn-small btn-foto-small" onclick="lihatFotoPreview('${item.foto}')">Lihat</button>` : '-';
-        let infoKet = item.keterangan !== "-" ? `<div style="font-size:12px; color:#666; margin-top:5px; font-weight:500;">${item.keterangan}</div>` : '';
+        let badgeStyle = item.status === 'Hadir' ? 'background-color: #dcfce7; color: #16a34a;' : (item.status === 'Tidak Hadir' ? 'background-color: #fee2e2; color: #ef4444;' : 'background-color: #f1f5f9; color: #64748b;');
+        let btnFoto = item.foto ? `<button class="btn-small btn-abu" onclick="lihatFotoPreview('${item.foto}')">Lihat</button>` : '-';
+        let infoKet = item.keterangan !== "-" ? `<div style="font-size:12px; color:#64748b; margin-top:4px;">${item.keterangan}</div>` : '';
         tbody.innerHTML += `<tr><td><strong>${item.nama}</strong></td><td><span class="status-badge" style="${badgeStyle}">${item.status}</span></td><td>${btnFoto} ${infoKet}</td></tr>`;
     });
 }
 
-// ==== FITUR PERINGKAT/REKAP BULANAN ====
-function bukaModalPeringkatKelas() {
-    openModal('modal-peringkat-kelas'); renderPeringkatKelas();
-}
+// ==== FITUR PERINGKAT ====
+function bukaModalPeringkatKelas() { openModal('modal-peringkat-kelas'); renderPeringkatKelas(); }
 
 function renderPeringkatKelas() {
     let stats = [];
@@ -582,7 +542,7 @@ function renderPeringkatKelas() {
     tbody.innerHTML = "";
     stats.forEach((item, index) => {
         let rankMedal = index === 0 ? "🥇" : (index === 1 ? "🥈" : (index === 2 ? "🥉" : (index + 1)));
-        tbody.innerHTML += `<tr><td style="text-align:center; font-weight:bold; font-size:18px;">${rankMedal}</td><td><strong style="font-size:16px;">${item.kelas}</strong></td><td style="text-align:center;"><span style="color:#ef4444; font-weight:bold; font-size:16px;">${item.alpha}</span></td></tr>`;
+        tbody.innerHTML += `<tr><td style="text-align:center; font-weight:bold; font-size:18px;">${rankMedal}</td><td><strong style="font-size:15px;">${item.kelas}</strong></td><td style="text-align:center;"><span style="color:#ef4444; font-weight:bold; font-size:16px;">${item.alpha}</span></td></tr>`;
     });
 }
 
@@ -630,10 +590,7 @@ function renderPeringkatSiswa() {
     });
 }
 
-// ==== FITUR SISWA TERTELADAN (ADMIN PERKELAS) ====
-function bukaModalPeringkatSiswaKelas() {
-    openModal('modal-peringkat-siswa-kelas'); renderPeringkatSiswaKelas();
-}
+function bukaModalPeringkatSiswaKelas() { openModal('modal-peringkat-siswa-kelas'); renderPeringkatSiswaKelas(); }
 
 function renderPeringkatSiswaKelas() {
     const kls = currentUser.kelas;
@@ -657,9 +614,7 @@ function renderPeringkatSiswaKelas() {
     });
 }
 
-function lihatFotoPreview(url) {
-    document.getElementById('preview-image-src').src = url; openModal('modal-preview-foto');
-}
+function lihatFotoPreview(url) { document.getElementById('preview-image-src').src = url; openModal('modal-preview-foto'); }
 
 // ==== PANEL ABSEN SISWA ====
 function generateKelasList() {
@@ -673,14 +628,14 @@ function generateKelasList() {
 generateKelasList();
 
 function pilihKelas(kelas) {
-    document.getElementById('kelas').value = kelas; document.getElementById('teks-kelas').innerText = kelas; document.getElementById('btn-pilih-kelas').classList.add('selected');
-    document.getElementById('hari').value = ""; document.getElementById('teks-hari').innerText = "Pilih hari kehadiran..."; document.getElementById('btn-pilih-hari').classList.remove('selected');
+    document.getElementById('kelas').value = kelas; document.getElementById('teks-kelas').innerText = kelas;
+    document.getElementById('hari').value = ""; document.getElementById('teks-hari').innerText = "Pilih hari kehadiran...";
     document.getElementById('nama-terpilih').value = ""; document.getElementById('search-nama').value = "";
     closeModal('modal-kelas'); renderNama("");
 }
 
 function pilihHari(hari) {
-    document.getElementById('hari').value = hari; document.getElementById('teks-hari').innerText = hari; document.getElementById('btn-pilih-hari').classList.add('selected');
+    document.getElementById('hari').value = hari; document.getElementById('teks-hari').innerText = hari;
     document.getElementById('nama-terpilih').value = ""; document.getElementById('search-nama').value = "";
     closeModal('modal-hari'); renderNama("");
 }
@@ -690,11 +645,11 @@ function renderNama(filterText = "") {
     const kelas = document.getElementById('kelas').value;
     const hari = document.getElementById('hari').value;
     listContainer.innerHTML = "";
-    if (!kelas) return listContainer.innerHTML = `<div class="name-item disabled" style="text-align:center; color:#94a3b8; padding: 20px;">Pilih kelas terlebih dahulu.</div>`;
+    if (!kelas) return listContainer.innerHTML = `<div class="name-item disabled" style="text-align:center;">Pilih kelas terlebih dahulu.</div>`;
     
     const daftarNama = daftarNamaPerKelas[kelas] || [];
     const filtered = daftarNama.filter(nama => nama.toLowerCase().includes(filterText.toLowerCase()));
-    if (filtered.length === 0) return listContainer.innerHTML = `<div class="name-item disabled" style="text-align:center; color:#94a3b8; padding: 20px;">Siswa tidak ditemukan.</div>`;
+    if (filtered.length === 0) return listContainer.innerHTML = `<div class="name-item disabled" style="text-align:center;">Siswa tidak ditemukan.</div>`;
     
     let sudahAbsenMap = new Set();
     if (hari) dbAbsensi.forEach(record => { if (record.kelas === kelas && record.hari === hari) sudahAbsenMap.add(record.nama); });
@@ -704,19 +659,16 @@ function renderNama(filterText = "") {
         div.className = 'name-item';
         const sudahAbsen = sudahAbsenMap.has(nama);
         if (sudahAbsen) {
-            div.innerHTML = `${nama} <span style="float:right; color:#10b981; font-weight:700;">✓ Tercatat</span>`;
+            div.innerHTML = `${nama} <span style="float:right; color:#10b981;">✓ Tercatat</span>`;
             div.classList.add('disabled');
         } else {
             div.innerText = nama;
             if (nama === document.getElementById('nama-terpilih').value) div.classList.add('terpilih');
-            div.onclick = () => {
-                document.getElementById('nama-terpilih').value = nama; document.getElementById('search-nama').value = nama; renderNama(nama);
-            };
+            div.onclick = () => { document.getElementById('nama-terpilih').value = nama; document.getElementById('search-nama').value = nama; renderNama(nama); };
         }
         listContainer.appendChild(div);
     });
 }
-renderNama();
 function filterNama() { renderNama(document.getElementById('search-nama').value); }
 
 // ==== KAMERA ====
@@ -726,7 +678,7 @@ async function mulaiKamera() {
         document.getElementById('video-kamera').srcObject = streamKamera; document.getElementById('video-kamera').classList.remove('hidden');
         document.getElementById('canvas-kamera').classList.add('hidden'); document.getElementById('btn-capture').classList.remove('hidden'); document.getElementById('btn-retake').classList.add('hidden');
     } catch (err) {
-        Swal.fire({ title: 'Akses Ditolak', text: 'Izinkan browser menggunakan kamera untuk verifikasi.', icon: 'error', timer: 3000, timerProgressBar: true, showConfirmButton: false });
+        Swal.fire({ title: 'Akses Ditolak', text: 'Izinkan browser menggunakan kamera untuk verifikasi.', icon: 'error', timer: 3000, showConfirmButton: false });
     }
 }
 function matikanKamera() { if (streamKamera) streamKamera.getTracks().forEach(track => track.stop()); }
@@ -755,15 +707,15 @@ async function kirimAbsen() {
     const kelas = document.getElementById('kelas').value; const hari = document.getElementById('hari').value; const nama = document.getElementById('nama-terpilih').value;
     const status = 'Hadir'; const keterangan = "-";
 
-    if (!kelas || !hari || !nama) return Swal.fire({ title: 'Gagal', text: 'Isi semua data.', icon: 'warning', timer: 2500, timerProgressBar: true, showConfirmButton: false });
+    if (!kelas || !hari || !nama) return Swal.fire({ title: 'Gagal', text: 'Isi semua data.', icon: 'warning', timer: 2500, showConfirmButton: false });
 
-    Swal.fire({ title: 'Mengecek Lokasi...', text: 'Memastikan Anda berada di sekolah.', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
+    showCustomLoading('Mengecek Lokasi...', 'Memastikan Anda berada di area sekolah');
     try { const jarak = await verifikasiLokasi(); Swal.close(); } catch (pesanError) { return Swal.fire({ title: 'Gagal Absen', text: pesanError, icon: 'error' }); }
 
     let fotoSimpan = document.getElementById('foto-data').value;
-    if (!fotoSimpan) return Swal.fire({ title: 'Bukti Diperlukan', text: 'Ambil foto terlebih dahulu.', icon: 'warning', timer: 2500, timerProgressBar: true, showConfirmButton: false });
+    if (!fotoSimpan) return Swal.fire({ title: 'Bukti Diperlukan', text: 'Ambil foto terlebih dahulu.', icon: 'warning', timer: 2500, showConfirmButton: false });
 
-    Swal.fire({ title: 'Mengirim Data...', text: 'Mohon tunggu', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
+    showCustomLoading('Mengirim Data...', 'Mohon tunggu sebentar');
 
     const timeNow = new Date(); const uniqueId = "ID_" + timeNow.getTime() + "_" + Math.random().toString(36).substr(2, 5); const waktuStr = timeNow.toLocaleString('id-ID');
     let publicUrl = ''; let fileName = '';
@@ -771,14 +723,14 @@ async function kirimAbsen() {
     if (fotoSimpan) {
         const blob = dataURLtoBlob(fotoSimpan); const fileExt = 'jpg'; fileName = `absensi_${uniqueId}.${fileExt}`;
         const { error: uploadError } = await supabaseClient.storage.from('foto-absensi').upload(fileName, blob, { contentType: 'image/jpeg', upsert: true });
-        if (uploadError) return Swal.fire({ title: 'Gagal', text: 'Gagal unggah bukti.', icon: 'error', timer: 2500, timerProgressBar: true, showConfirmButton: false });
+        if (uploadError) return Swal.fire({ title: 'Gagal', text: 'Gagal unggah bukti.', icon: 'error', timer: 2500, showConfirmButton: false });
         const { data: publicUrlData } = supabaseClient.storage.from('foto-absensi').getPublicUrl(fileName); publicUrl = publicUrlData.publicUrl;
     }
 
     const payload = { kelas: kelas, hari: hari, nama: nama, status: status, keterangan: keterangan, foto: publicUrl, filePath: fileName, waktuStr: waktuStr, lockKey: `absen_${kelas}_${nama}_${hari}` };
     await firebase.database().ref('absensi/' + uniqueId).set(payload);
 
-    Swal.fire({ title: 'Berhasil!', text: `${nama} telah absen.`, icon: 'success', timer: 2500, timerProgressBar: true, showConfirmButton: false }).then(() => {
+    Swal.fire({ title: 'Berhasil!', text: `${nama} telah absen.`, icon: 'success', timer: 2500, showConfirmButton: false }).then(() => {
         document.getElementById('nama-terpilih').value = ""; document.getElementById('search-nama').value = ""; document.getElementById('foto-data').value = "";
         retakePhoto(); matikanKamera(); switchPanel('panel-awal');
     });
