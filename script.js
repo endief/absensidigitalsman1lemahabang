@@ -127,7 +127,7 @@ function verifikasiLokasi() {
                 if (jarak <= BATAS_JARAK_METER) resolve(jarak);
                 else reject(`Anda berada di luar area absen! Jarak Anda ${Math.round(jarak)} meter dari sekolah.`);
             },
-            (error) => reject("Gagal mendapatkan lokasi. Pastikan GPS menyala."),
+            (error) => reject("Gagal mendapatkan lokasi. Harap kirim ulang!"),
             { enableHighAccuracy: true, timeout: 10000 } 
         );
     });
@@ -294,23 +294,23 @@ async function hapusDataIndividu(id) {
 }
 
 async function resetSemuaData() {
-    Swal.fire({ title: 'Reset Harian?', text: "Menghapus seluruh absensi. Peringkat Bulanan tetap utuh.", icon: 'error', showCancelButton: true, confirmButtonColor: '#991b1b', confirmButtonText: 'Ya, Reset Harian!' }).then(async (result) => {
+    Swal.fire({ title: 'Reset Absensi?', text: "Akan menghapus seluruh absensi.", icon: 'error', showCancelButton: true, confirmButtonColor: '#991b1b', confirmButtonText: 'Ya, Reset Harian!' }).then(async (result) => {
         if (result.isConfirmed) {
             const snap = await firebase.database().ref('absensi').once('value');
             const allData = snap.val() || {};
             const filePaths = Object.values(allData).map(d => d.filePath).filter(Boolean);
             if (filePaths.length > 0) await supabaseClient.storage.from('foto-absensi').remove(filePaths);
             await firebase.database().ref('absensi').remove();
-            Swal.fire({ title: 'Direset!', text: 'Data harian dihapus.', icon: 'success' });
+            Swal.fire({ title: 'Direset!', text: 'Absensi hari ini dihapus.', icon: 'success' });
         }
     });
 }
 
 async function resetRekapBulanan() {
-    Swal.fire({ title: 'Reset Bulanan?', text: "Peringkat kelas dan siswa akan di-reset menjadi 0!", icon: 'warning', showCancelButton: true, confirmButtonColor: '#9a3412', confirmButtonText: 'Ya, Reset Bulan Ini!' }).then(async (result) => {
+    Swal.fire({ title: 'Reset Bulanan?', text: "Peringkat kelas dan siswa terteladan akan di-reset menjadi 0!", icon: 'warning', showCancelButton: true, confirmButtonColor: '#9a3412', confirmButtonText: 'Ya, Reset Bulan Ini!' }).then(async (result) => {
         if (result.isConfirmed) {
             await firebase.database().ref('rekap_bulanan').remove();
-            Swal.fire({ title: 'Direset!', text: 'Peringkat bulanan berhasil dikosongkan.', icon: 'success' });
+            Swal.fire({ title: 'Direset!', text: 'Berhasil dikosongkan.', icon: 'success' });
         }
     });
 }
@@ -341,7 +341,7 @@ async function toggleStatusAbsensi() {
 
 async function prosesTutupAbsensi(hariDitutup) {
     closeModal('modal-tutup-absen-hari');
-    showCustomLoading('Memproses...', 'Merekap siswa Alpha ke Peringkat Bulanan...');
+    showCustomLoading('Memproses...', 'Merekap siswa Tidak Hadir ke Peringkat Bulanan...');
     
     try {
         let updates = {};
@@ -362,7 +362,7 @@ async function prosesTutupAbsensi(hariDitutup) {
                 if (!hasAbsen) {
                     const uniqueId = "ID_" + timeNow.getTime() + "_" + Math.random().toString(36).substr(2, 5);
                     updates['absensi/' + uniqueId] = {
-                        kelas: kls, hari: hariDitutup, nama: nama, status: 'Tidak Hadir', keterangan: 'Ditutup Sistem (Alpha)', foto: '', filePath: '', waktuStr: waktuStr, lockKey: `absen_${kls}_${nama}_${hariDitutup}`
+                        kelas: kls, hari: hariDitutup, nama: nama, status: 'Tidak Hadir', keterangan: 'Ditutup Admin', foto: '', filePath: '', waktuStr: waktuStr, lockKey: `absen_${kls}_${nama}_${hariDitutup}`
                     };
                     const safeNama = sanitizeKey(nama); 
                     tempSiswa[kls][safeNama] = (tempSiswa[kls][safeNama] || 0) + 1;
@@ -378,11 +378,11 @@ async function prosesTutupAbsensi(hariDitutup) {
         await firebase.database().ref('settings/status_absen').set('ditutup');
         
         updateTeksTombolBukaTutup();
-        Swal.fire({ title: 'Absensi Ditutup', text: `Siswa yang belum absen hari ${hariDitutup} otomatis Alpha.`, icon: 'success', timer: 4500, showConfirmButton: false });
+        Swal.fire({ title: 'Absensi Ditutup', text: `Siswa yang belum absen hari ${hariDitutup} otomatis Tidak Hadir.`, icon: 'success', timer: 4500, showConfirmButton: false });
 
     } catch (error) {
         console.error("Error Tutup Absen:", error);
-        Swal.fire({ title: 'Kesalahan', text: 'Gagal merekap absensi.', icon: 'error' });
+        Swal.fire({ title: 'Kesalahan', text: 'Gagal menutup absensi.', icon: 'error' });
     }
 }
 
@@ -400,7 +400,7 @@ async function updateTeksTombolBukaTutup() {
 async function cekDanBukaAbsen() {
     const snapshot = await firebase.database().ref('settings/status_absen').once('value');
     const isClosed = snapshot.val() === 'ditutup';
-    if (isClosed) Swal.fire({ title: 'Absensi Ditutup', text: 'Sesi absen saat ini sudah tidak tersedia.', icon: 'error', timer: 3000, showConfirmButton: false });
+    if (isClosed) Swal.fire({ title: 'Absensi Ditutup', text: 'Siswa tidak bisa absen.', icon: 'error', timer: 3000, showConfirmButton: false });
     else switchPanel('panel-absen');
 }
 
@@ -437,7 +437,7 @@ async function resetDataKelas() {
             const filePaths = dataKelas.map(d => d.filePath).filter(Boolean);
             if (filePaths.length > 0) await supabaseClient.storage.from('foto-absensi').remove(filePaths);
             for (const item of dataKelas) await firebase.database().ref('absensi/' + item.id).remove();
-            Swal.fire({ title: 'Direset!', text: `Data harian dihapus.`, icon: 'success' });
+            Swal.fire({ title: 'Direset!', text: `Absensi dihapus.`, icon: 'success' });
         }
     });
 }
@@ -735,7 +735,7 @@ async function kirimAbsen() {
     if (fotoSimpan) {
         const blob = dataURLtoBlob(fotoSimpan); const fileExt = 'jpg'; fileName = `absensi_${uniqueId}.${fileExt}`;
         const { error: uploadError } = await supabaseClient.storage.from('foto-absensi').upload(fileName, blob, { contentType: 'image/jpeg', upsert: true });
-        if (uploadError) return Swal.fire({ title: 'Gagal', text: 'Gagal unggah bukti.', icon: 'error', timer: 2500, showConfirmButton: false });
+        if (uploadError) return Swal.fire({ title: 'Gagal', text: 'Gagal kirim bukti. Harap kirim ulang!', icon: 'error', timer: 2500, showConfirmButton: false });
         const { data: publicUrlData } = supabaseClient.storage.from('foto-absensi').getPublicUrl(fileName); publicUrl = publicUrlData.publicUrl;
     }
 
