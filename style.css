@@ -36,7 +36,7 @@ body {
     background: #ffffff;
     width: 100%;
     max-width: 480px;
-    border-radius: 32px; /* Lebih membulat untuk menyesuaikan desain dalam */
+    border-radius: 32px;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05);
     overflow: hidden;
     padding: 40px 30px;
@@ -114,30 +114,28 @@ body {
     font-size: 14px;
     font-weight: 700;
     margin-bottom: 10px;
-    margin-left: 12px; /* Sejajar dengan padding dalam pill box */
+    margin-left: 12px;
     color: #1e293b;
 }
 
-/* Tampilan Pill (Kapsul) dengan Soft Shadow */
 .input-field, .custom-select-btn {
     font-family: var(--font-body);
     width: 100%;
-    padding: 18px 24px; /* Padding lebih lebar untuk ujung kapsul */
-    background: #ffffff; /* Warna putih bersih */
-    border: none; /* Hilangkan outline */
-    border-radius: 50px; /* Sudut membulat penuh */
+    padding: 18px 24px;
+    background: #ffffff;
+    border: none;
+    border-radius: 50px;
     font-size: 15px;
     color: #334155;
     outline: none;
-    box-shadow: 0 8px 24px rgba(149, 157, 165, 0.15); /* Soft shadow melayang */
+    box-shadow: 0 8px 24px rgba(149, 157, 165, 0.15);
     transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
     cursor: pointer;
 }
 
-/* Efek Interaktif saat diklik/hover */
 .input-field:focus, .custom-select-btn:hover {
-    box-shadow: 0 12px 32px rgba(149, 157, 165, 0.25); /* Shadow membesar */
-    transform: translateY(-2px); /* Kotak sedikit terangkat */
+    box-shadow: 0 12px 32px rgba(149, 157, 165, 0.25);
+    transform: translateY(-2px);
 }
 
 .input-field::placeholder { color: #94a3b8; }
@@ -150,7 +148,7 @@ button {
     width: 100%;
     padding: 16px 24px;
     border: none;
-    border-radius: 50px; /* Seragam Pill Shape */
+    border-radius: 50px;
     font-size: 15px;
     font-weight: 700;
     cursor: pointer;
@@ -182,17 +180,8 @@ button:active { transform: translateY(1px); }
 .btn-abu { background: #334155; color: white; box-shadow: 0 6px 16px rgba(51, 65, 85, 0.3); } 
 .btn-abu:hover { background: #1e293b; }
 
-/* Tombol Putih (Disamakan gayanya dengan input box premium) */
-.btn-outline { 
-    background: #ffffff; 
-    color: #0f172a; 
-    border: none; 
-    box-shadow: 0 8px 24px rgba(149, 157, 165, 0.15); 
-}
-.btn-outline:hover { 
-    background: #ffffff; 
-    box-shadow: 0 12px 32px rgba(149, 157, 165, 0.25); 
-}
+.btn-outline { background: #ffffff; color: #0f172a; border: none; box-shadow: 0 8px 24px rgba(149, 157, 165, 0.15); }
+.btn-outline:hover { background: #ffffff; box-shadow: 0 12px 32px rgba(149, 157, 165, 0.25); }
 
 .btn-text { background: transparent; color: #64748b; font-weight: 700; box-shadow: none; }
 .btn-text:hover { color: #1e293b; transform: none; }
@@ -205,7 +194,6 @@ button:active { transform: translateY(1px); }
     margin-bottom: 12px;
 }
 
-/* Tombol kecil tabel menjadi kapsul juga */
 .btn-small { padding: 8px 16px; font-size: 12px; border-radius: 50px; margin: 0; box-shadow: none; font-weight: 700; }
 .btn-small:hover { transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
 .btn-delete-small { background: #fee2e2; color: #b91c1c; }
@@ -255,13 +243,12 @@ td { padding: 16px; font-size: 14px; border-bottom: 1px solid #f1f5f9; color: #1
 .table-rank { max-width: 400px; margin: 0 auto; }
 .table-rank table { min-width: 100%; }
 
-/* Badge Status Modern */
 .badge-status {
     display: inline-flex;
     align-items: center;
     gap: 6px;
     padding: 6px 14px;
-    border-radius: 50px; /* Pill shape */
+    border-radius: 50px;
     font-size: 12px;
     font-weight: 800;
 }
@@ -325,15 +312,43 @@ video, canvas { width: 100%; display: block; transform: scaleX(-1); }
 .modal-item:last-child { border-bottom: none; }
 .modal-item:hover { background: #f0f9ff; color: #0284c7; border-radius: 16px; }
 
-/* ========== ANIMASI LOADING MZ-LOADER ========== */
-.mz-loader-container { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px 0; }
-.mz-loader { display: flex; align-items: flex-end; justify-content: center; gap: 15px; height: 50px; margin-bottom: 20px; }
-.mz-loader span { height: 25px; width: 25px; background-color: #0ea5e9; border-radius: 50%; animation: mz-bounce 0.6s ease-in-out infinite alternate; }
+/* ========== ANIMASI LOADING MZ-LOADER (DIPERKECIL) ========== */
+.mz-loader-container { 
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+    justify-content: center; 
+    padding: 15px 0; 
+}
+.mz-loader { 
+    display: flex; 
+    align-items: flex-end; 
+    justify-content: center; 
+    gap: 8px; /* Jarak antar bola dirapatkan */
+    height: 35px; /* Tinggi wadah dikurangi */
+    margin-bottom: 15px; 
+}
+.mz-loader span { 
+    height: 14px; /* Ukuran bola diperkecil */
+    width: 14px;  /* Ukuran bola diperkecil */
+    background-color: #0ea5e9; 
+    border-radius: 50%; 
+    animation: mz-bounce 0.6s ease-in-out infinite alternate; 
+}
 .mz-loader span:nth-child(1) { animation-delay: 0s; }
 .mz-loader span:nth-child(2) { animation-delay: 0.2s; }
 .mz-loader span:nth-child(3) { animation-delay: 0.4s; }
-@keyframes mz-bounce { 0% { transform: translateY(0); } 100% { transform: translateY(-25px); } }
-.mz-text { font-family: var(--font-body); font-size: 16px; font-weight: 700; color: #1e293b; }
+@keyframes mz-bounce { 
+    0% { transform: translateY(0); } 
+    100% { transform: translateY(-16px); } /* Lompatan disesuaikan agar tidak terlalu tinggi */
+}
+.mz-text { 
+    font-family: var(--font-body); 
+    font-size: 15px; 
+    font-weight: 700; 
+    color: #1e293b; 
+    text-align: center;
+}
 
 /* Modifikasi SweetAlert Bawaan */
 div:where(.swal2-container) .swal2-popup { border-radius: 32px; font-family: var(--font-body); box-shadow: 0 20px 40px rgba(0,0,0,0.2); }
