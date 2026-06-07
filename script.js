@@ -74,7 +74,8 @@ const iconCrossSVG = `<svg class="anim-cross" width="16" height="16" viewBox="0 
 // Helper Render Status Badge
 function getStatusBadge(status) {
     if (status === 'Hadir') return `<span class="badge-status badge-hadir">${iconCheckSVG} Hadir</span>`;
-    if (status === 'Tidak Hadir') return `<span class="badge-status badge-alpha">${iconCrossSVG} Alpha</span>`;
+    // Diubah dari Alpha menjadi Tidak Hadir
+    if (status === 'Tidak Hadir') return `<span class="badge-status badge-alpha">${iconCrossSVG} Tidak Hadir</span>`;
     return `<span class="badge-status badge-belum">Belum Absen</span>`;
 }
 
@@ -106,9 +107,9 @@ function initFirebaseListeners() {
 initFirebaseListeners();
 
 // ==== KONFIGURASI GEOFENCING ====
-const KANTOR_LAT = -6.830268;
-const KANTOR_LON = 108.621133;
-const BATAS_JARAK_METER = 75;
+const KANTOR_LAT = -6.818837;
+const KANTOR_LON = 108.629478;
+const BATAS_JARAK_METER = 75; // Sesuai file sebelumnya (75m)
 
 function hitungJarak(lat1, lon1, lat2, lon2) {
     const R = 6371e3;
@@ -127,7 +128,7 @@ function verifikasiLokasi() {
                 if (jarak <= BATAS_JARAK_METER) resolve(jarak);
                 else reject(`Anda berada di luar area absen! Jarak Anda ${Math.round(jarak)} meter dari sekolah.`);
             },
-            (error) => reject("Gagal mendapatkan lokasi. Harap kirim ulang!"),
+            (error) => reject("Gagal mendapatkan lokasi. Pastikan GPS menyala."),
             { enableHighAccuracy: true, timeout: 10000 } 
         );
     });
@@ -258,7 +259,8 @@ function renderTabelAdmin() {
     
     dbAbsensi.forEach(data => {
         let badgeHTML = getStatusBadge(data.status);
-        let btnFoto = data.foto ? `<button class="btn-small btn-abu" onclick="lihatFotoPreview('${data.foto}')">Lihat</button>` : '-';
+        // Hanya munculkan tombol Foto jika statusnya Hadir
+        let btnFoto = (data.status === 'Hadir' && data.foto) ? `<button class="btn-small btn-abu" onclick="lihatFotoPreview('${data.foto}')">Lihat</button>` : '-';
         let btnHapus = `<button class="btn-small btn-delete-small" onclick="hapusDataIndividu('${data.id}')">Hapus</button>`;
         let tr = document.createElement('tr');
         tr.innerHTML = `
@@ -294,23 +296,23 @@ async function hapusDataIndividu(id) {
 }
 
 async function resetSemuaData() {
-    Swal.fire({ title: 'Reset Absensi?', text: "Akan menghapus seluruh absensi.", icon: 'error', showCancelButton: true, confirmButtonColor: '#991b1b', confirmButtonText: 'Ya, Reset Harian!' }).then(async (result) => {
+    Swal.fire({ title: 'Reset Harian?', text: "Menghapus seluruh absensi. Peringkat Bulanan tetap utuh.", icon: 'error', showCancelButton: true, confirmButtonColor: '#991b1b', confirmButtonText: 'Ya, Reset Harian!' }).then(async (result) => {
         if (result.isConfirmed) {
             const snap = await firebase.database().ref('absensi').once('value');
             const allData = snap.val() || {};
             const filePaths = Object.values(allData).map(d => d.filePath).filter(Boolean);
             if (filePaths.length > 0) await supabaseClient.storage.from('foto-absensi').remove(filePaths);
             await firebase.database().ref('absensi').remove();
-            Swal.fire({ title: 'Direset!', text: 'Absensi hari ini dihapus.', icon: 'success' });
+            Swal.fire({ title: 'Direset!', text: 'Data harian dihapus.', icon: 'success' });
         }
     });
 }
 
 async function resetRekapBulanan() {
-    Swal.fire({ title: 'Reset Bulanan?', text: "Peringkat kelas dan siswa terteladan akan di-reset menjadi 0!", icon: 'warning', showCancelButton: true, confirmButtonColor: '#9a3412', confirmButtonText: 'Ya, Reset Bulan Ini!' }).then(async (result) => {
+    Swal.fire({ title: 'Reset Bulanan?', text: "Peringkat kelas dan siswa akan di-reset menjadi 0!", icon: 'warning', showCancelButton: true, confirmButtonColor: '#9a3412', confirmButtonText: 'Ya, Reset Bulan Ini!' }).then(async (result) => {
         if (result.isConfirmed) {
             await firebase.database().ref('rekap_bulanan').remove();
-            Swal.fire({ title: 'Direset!', text: 'Berhasil dikosongkan.', icon: 'success' });
+            Swal.fire({ title: 'Direset!', text: 'Peringkat bulanan berhasil dikosongkan.', icon: 'success' });
         }
     });
 }
@@ -362,7 +364,8 @@ async function prosesTutupAbsensi(hariDitutup) {
                 if (!hasAbsen) {
                     const uniqueId = "ID_" + timeNow.getTime() + "_" + Math.random().toString(36).substr(2, 5);
                     updates['absensi/' + uniqueId] = {
-                        kelas: kls, hari: hariDitutup, nama: nama, status: 'Tidak Hadir', keterangan: 'Ditutup Admin', foto: '', filePath: '', waktuStr: waktuStr, lockKey: `absen_${kls}_${nama}_${hariDitutup}`
+                        // Keterangan diubah jadi '-' agar tidak muncul teks di kolom Bukti
+                        kelas: kls, hari: hariDitutup, nama: nama, status: 'Tidak Hadir', keterangan: '-', foto: '', filePath: '', waktuStr: waktuStr, lockKey: `absen_${kls}_${nama}_${hariDitutup}`
                     };
                     const safeNama = sanitizeKey(nama); 
                     tempSiswa[kls][safeNama] = (tempSiswa[kls][safeNama] || 0) + 1;
@@ -382,7 +385,7 @@ async function prosesTutupAbsensi(hariDitutup) {
 
     } catch (error) {
         console.error("Error Tutup Absen:", error);
-        Swal.fire({ title: 'Kesalahan', text: 'Gagal menutup absensi.', icon: 'error' });
+        Swal.fire({ title: 'Kesalahan', text: 'Gagal merekap absensi.', icon: 'error' });
     }
 }
 
@@ -400,7 +403,7 @@ async function updateTeksTombolBukaTutup() {
 async function cekDanBukaAbsen() {
     const snapshot = await firebase.database().ref('settings/status_absen').once('value');
     const isClosed = snapshot.val() === 'ditutup';
-    if (isClosed) Swal.fire({ title: 'Absensi Ditutup', text: 'Siswa tidak bisa absen.', icon: 'error', timer: 3000, showConfirmButton: false });
+    if (isClosed) Swal.fire({ title: 'Absensi Ditutup', text: 'Sesi absen saat ini sudah tidak tersedia.', icon: 'error', timer: 3000, showConfirmButton: false });
     else switchPanel('panel-absen');
 }
 
@@ -414,7 +417,8 @@ function renderTabelKelas() {
     tbody.innerHTML = "";
     dataKelas.forEach(data => {
         let badgeHTML = getStatusBadge(data.status);
-        let btnFoto = data.foto ? `<button class="btn-small btn-abu" onclick="lihatFotoPreview('${data.foto}')">Lihat</button>` : '-';
+        // Hanya munculkan tombol Foto jika statusnya Hadir
+        let btnFoto = (data.status === 'Hadir' && data.foto) ? `<button class="btn-small btn-abu" onclick="lihatFotoPreview('${data.foto}')">Lihat</button>` : '-';
         let btnHapus = `<button class="btn-small btn-delete-small" onclick="hapusDataIndividu('${data.id}')">Hapus</button>`;
         let tr = document.createElement('tr');
         tr.innerHTML = `
@@ -437,7 +441,7 @@ async function resetDataKelas() {
             const filePaths = dataKelas.map(d => d.filePath).filter(Boolean);
             if (filePaths.length > 0) await supabaseClient.storage.from('foto-absensi').remove(filePaths);
             for (const item of dataKelas) await firebase.database().ref('absensi/' + item.id).remove();
-            Swal.fire({ title: 'Direset!', text: `Absensi dihapus.`, icon: 'success' });
+            Swal.fire({ title: 'Direset!', text: `Data harian dihapus.`, icon: 'success' });
         }
     });
 }
@@ -499,9 +503,17 @@ function renderTabelKehadiran() {
     
     hasilAkhir.forEach(item => {
         let badgeHTML = getStatusBadge(item.status);
-        let btnFoto = item.foto ? `<button class="btn-small btn-abu" onclick="lihatFotoPreview('${item.foto}')">Lihat</button>` : '-';
-        let infoKet = item.keterangan !== "-" ? `<div style="font-size:12px; color:#64748b; margin-top:4px;">${item.keterangan}</div>` : '';
-        tbody.innerHTML += `<tr><td><strong>${item.nama}</strong></td><td>${badgeHTML}</td><td>${btnFoto} ${infoKet}</td></tr>`;
+        let kontenBukti = '-';
+        
+        // Hanya proses tombol foto jika statusnya Hadir
+        if (item.status === 'Hadir') {
+            let btnFoto = item.foto ? `<button class="btn-small btn-abu" onclick="lihatFotoPreview('${item.foto}')">Lihat</button>` : '';
+            let infoKet = item.keterangan !== "-" ? `<div style="font-size:12px; color:#64748b; margin-top:4px;">${item.keterangan}</div>` : '';
+            kontenBukti = (btnFoto + ' ' + infoKet).trim();
+            if(kontenBukti === '') kontenBukti = '-';
+        }
+        
+        tbody.innerHTML += `<tr><td><strong>${item.nama}</strong></td><td>${badgeHTML}</td><td>${kontenBukti}</td></tr>`;
     });
 }
 
@@ -532,9 +544,17 @@ function renderTabelKehadiranKelas() {
     tbody.innerHTML = "";
     hasilAkhir.forEach(item => {
         let badgeHTML = getStatusBadge(item.status);
-        let btnFoto = item.foto ? `<button class="btn-small btn-abu" onclick="lihatFotoPreview('${item.foto}')">Lihat</button>` : '-';
-        let infoKet = item.keterangan !== "-" ? `<div style="font-size:12px; color:#64748b; margin-top:4px;">${item.keterangan}</div>` : '';
-        tbody.innerHTML += `<tr><td><strong>${item.nama}</strong></td><td>${badgeHTML}</td><td>${btnFoto} ${infoKet}</td></tr>`;
+        let kontenBukti = '-';
+        
+        // Hanya proses tombol foto jika statusnya Hadir
+        if (item.status === 'Hadir') {
+            let btnFoto = item.foto ? `<button class="btn-small btn-abu" onclick="lihatFotoPreview('${item.foto}')">Lihat</button>` : '';
+            let infoKet = item.keterangan !== "-" ? `<div style="font-size:12px; color:#64748b; margin-top:4px;">${item.keterangan}</div>` : '';
+            kontenBukti = (btnFoto + ' ' + infoKet).trim();
+            if(kontenBukti === '') kontenBukti = '-';
+        }
+        
+        tbody.innerHTML += `<tr><td><strong>${item.nama}</strong></td><td>${badgeHTML}</td><td>${kontenBukti}</td></tr>`;
     });
 }
 
@@ -670,7 +690,6 @@ function renderNama(filterText = "") {
         div.className = 'name-item';
         const sudahAbsen = sudahAbsenMap.has(nama);
         if (sudahAbsen) {
-            // Menggunakan SVG Ikon Centang Modern
             div.innerHTML = `${nama} <span style="display:flex; align-items:center; color:#16a34a; font-weight:700;">${iconCheckSVG} <span style="margin-left:4px;">Tercatat</span></span>`;
             div.classList.add('disabled');
         } else {
@@ -735,7 +754,7 @@ async function kirimAbsen() {
     if (fotoSimpan) {
         const blob = dataURLtoBlob(fotoSimpan); const fileExt = 'jpg'; fileName = `absensi_${uniqueId}.${fileExt}`;
         const { error: uploadError } = await supabaseClient.storage.from('foto-absensi').upload(fileName, blob, { contentType: 'image/jpeg', upsert: true });
-        if (uploadError) return Swal.fire({ title: 'Gagal', text: 'Gagal kirim bukti. Harap kirim ulang!', icon: 'error', timer: 2500, showConfirmButton: false });
+        if (uploadError) return Swal.fire({ title: 'Gagal', text: 'Gagal unggah bukti.', icon: 'error', timer: 2500, showConfirmButton: false });
         const { data: publicUrlData } = supabaseClient.storage.from('foto-absensi').getPublicUrl(fileName); publicUrl = publicUrlData.publicUrl;
     }
 
