@@ -325,82 +325,17 @@ video, canvas { width: 100%; display: block; transform: scaleX(-1); }
 .modal-item:last-child { border-bottom: none; }
 .modal-item:hover { background: #f0f9ff; color: #0284c7; border-radius: 16px; }
 
-/* ========== TIKTOK STYLE TOAST OVERLAY ========== */
-div:where(.swal2-container) .swal2-popup.tiktok-toast-popup {
-    background: rgba(22, 24, 35, 0.85) !important; /* Warna gelap khas TikTok */
-    backdrop-filter: blur(12px) !important;
-    -webkit-backdrop-filter: blur(12px) !important;
-    border-radius: 50px !important; /* Bentuk pill penuh */
-    width: auto !important;
-    max-width: 90% !important;
-    padding: 16px 26px !important;
-    box-shadow: 0 15px 35px rgba(0,0,0,0.2) !important;
-    display: flex !important;
-    flex-direction: row !important;
-    align-items: center !important;
-    justify-content: center !important;
-}
+/* ========== ANIMASI LOADING MZ-LOADER ========== */
+.mz-loader-container { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px 0; }
+.mz-loader { display: flex; align-items: flex-end; justify-content: center; gap: 15px; height: 50px; margin-bottom: 20px; }
+.mz-loader span { height: 25px; width: 25px; background-color: #0ea5e9; border-radius: 50%; animation: mz-bounce 0.6s ease-in-out infinite alternate; }
+.mz-loader span:nth-child(1) { animation-delay: 0s; }
+.mz-loader span:nth-child(2) { animation-delay: 0.2s; }
+.mz-loader span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes mz-bounce { 0% { transform: translateY(0); } 100% { transform: translateY(-25px); } }
+.mz-text { font-family: var(--font-body); font-size: 16px; font-weight: 700; color: #1e293b; }
 
-.tiktok-toast-popup .swal2-title,
-.tiktok-toast-popup .swal2-icon {
-    display: none !important; /* Sembunyikan elemen bawaan */
-}
-
-.tiktok-toast-popup .swal2-html-container {
-    margin: 0 !important;
-    padding: 0 !important;
-    overflow: hidden !important;
-}
-
-.tiktok-toast-container {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-}
-
-/* Animasi Putaran Cyan & Pink TikTok */
-.tiktok-spinner {
-    width: 22px;
-    height: 22px;
-    border: 3px solid rgba(255, 255, 255, 0.1);
-    border-top-color: #25f4ee; /* Cyan */
-    border-right-color: #fe2c55; /* Pink */
-    border-radius: 50%;
-    animation: tiktok-spin 0.8s linear infinite;
-}
-
-@keyframes tiktok-spin {
-    to { transform: rotate(360deg); }
-}
-
-/* Animasi Centang Sukses */
-.tiktok-success-icon {
-    width: 24px;
-    height: 24px;
-    fill: none;
-    stroke: #25f4ee; /* Cyan TikTok */
-    stroke-width: 3;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-    stroke-dasharray: 50;
-    stroke-dashoffset: 50;
-    animation: drawCheck 0.5s ease forwards;
-}
-
-@keyframes drawCheck {
-    to { stroke-dashoffset: 0; }
-}
-
-.tiktok-toast-text {
-    font-family: var(--font-body);
-    font-size: 15px;
-    font-weight: 600;
-    color: #ffffff;
-    margin: 0;
-    letter-spacing: 0.3px;
-}
-
-/* Modifikasi SweetAlert Bawaan (Bukan Toast) */
-div:where(.swal2-container) .swal2-popup:not(.tiktok-toast-popup) { border-radius: 32px; font-family: var(--font-body); box-shadow: 0 20px 40px rgba(0,0,0,0.2); }
+/* Modifikasi SweetAlert Bawaan */
+div:where(.swal2-container) .swal2-popup { border-radius: 32px; font-family: var(--font-body); box-shadow: 0 20px 40px rgba(0,0,0,0.2); }
 div:where(.swal2-container) button:where(.swal2-styled).swal2-confirm { background-color: #1e3a8a !important; border-radius: 50px !important; box-shadow: 0 6px 16px rgba(30, 58, 138, 0.3) !important; font-weight: 700; }
 div:where(.swal2-container) button:where(.swal2-styled).swal2-cancel { background-color: #f1f5f9 !important; color: #0f172a !important; border-radius: 50px !important; font-weight: 700; }
