@@ -1,15 +1,10 @@
-/* ========== GLOBAL & VARIABEL (TIKTOK THEME) ========== */
+/* ========== GLOBAL & VARIABEL ========== */
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+
 :root {
-    --bg-color: #ffffff;
-    --card-bg: #ffffff;
-    --text-main: #161823;
-    --text-muted: rgba(22, 24, 35, 0.5);
-    --primary-btn: #fe2c55;
-    --primary-btn-hover: #ea284e;
-    --border-light: rgba(22, 24, 35, 0.12);
-    --input-bg: rgba(22, 24, 35, 0.06);
-    --neon-cyan: #25f4ee; /* Dipertahankan untuk elemen yang pakai inline CSS */
-    --neon-pink: #fe2c55;
+    --bg-color: #f4f7f6; /* Warna abu-abu sangat muda */
+    --text-main: #1e293b;
+    --text-muted: #64748b;
     --font-heading: 'Outfit', sans-serif;
     --font-body: 'Plus Jakarta Sans', sans-serif;
 }
@@ -23,507 +18,283 @@
 
 body {
     background-color: var(--bg-color);
+    /* Background bintik-bintik persis seperti screenshot login */
+    background-image: radial-gradient(#cbd5e1 1.5px, transparent 1.5px);
+    background-size: 25px 25px;
     color: var(--text-main);
     font-family: var(--font-body);
     display: flex;
     justify-content: center;
     align-items: flex-start;
     min-height: 100vh;
+    padding: 20px;
 }
 
-/* Matikan efek glow dari desain lama */
-.glow-bg {
-    display: none;
-}
+.glow-bg { display: none; } /* Glow dihapus karena pakai tema clean */
 
-/* ========== CONTAINER MAIN ========== */
+/* ========== MAIN CONTAINER ========== */
 .app-container {
+    background: #ffffff;
     width: 100%;
     max-width: 480px;
-    min-height: 100vh;
-    background: var(--card-bg);
-    position: relative;
+    border-radius: 24px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05);
     overflow: hidden;
-    /* Dibuat flat layar penuh ala aplikasi mobile */
-    border-radius: 0;
-    box-shadow: none;
-    border: none;
+    padding: 40px 30px;
+    position: relative;
+    margin-top: 10px;
 }
 
 .app-container.admin-mode {
-    max-width: 900px;
-    margin: 0 auto;
+    max-width: 800px;
 }
 
-@media (min-width: 900px) {
-    .app-container.admin-mode {
-        margin: 20px auto;
-        min-height: auto;
-        border: 1px solid var(--border-light);
-        border-radius: 12px;
-    }
-}
-
-/* ========== PANEL ========== */
+/* ========== PANEL & TYPOGRAPHY ========== */
 .panel {
     display: none;
-    padding: 30px 25px;
-    width: 100%;
-    transition: opacity 0.4s ease, transform 0.4s ease;
-}
-
-.panel.active {
-    display: block;
     animation: fadeIn 0.4s ease forwards;
 }
-
+.panel.active { display: block; }
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
 }
 
-/* Typography (Rata kiri & Clean) */
-.portal-title, .panel-title, .judul-absen {
-    font-family: var(--font-heading);
-    font-weight: 700;
-    font-size: 28px;
-    color: var(--text-main);
-    margin-bottom: 8px;
-    text-align: left;
-    line-height: 1.2;
-}
-
-.sub-absen, .form-desc {
-    color: var(--text-muted);
-    font-size: 14px;
-    margin-bottom: 30px;
-    text-align: left;
-}
-
-.instansi-box {
-    text-align: left !important;
-    margin-bottom: 30px;
-}
-.instansi-main {
-    font-weight: 700;
-    font-size: 18px;
-    color: var(--text-main);
-}
-.instansi-sub {
-    font-size: 13px;
-    color: var(--text-muted);
-}
-
-/* Logo dibuat proporsional dan rata kiri */
-.logo-sekolah, .logo-absen {
+.logo-sekolah {
     display: block;
-    margin: 0 0 20px 0;
-    max-width: 70px;
-    height: auto;
-}
-
-/* ========== FORM INPUT ========== */
-.form-group {
+    max-width: 80px;
     margin-bottom: 20px;
-    text-align: left;
 }
 
+.portal-title, .judul-absen, .panel-title {
+    font-family: var(--font-heading);
+    font-size: 26px;
+    font-weight: 800;
+    color: #0f172a;
+    line-height: 1.2;
+    margin-bottom: 5px;
+}
+
+.panel-title { text-align: center; }
+
+.sub-absen, .instansi-sub {
+    font-family: var(--font-body);
+    color: #94a3b8;
+    font-size: 14px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 30px;
+}
+
+/* Teks Biru Cyan di Admin */
+.text-cyan {
+    color: #38bdf8 !important;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+/* ========== INPUT & FORM ========== */
+.form-group { margin-bottom: 20px; text-align: left; }
 .form-group label {
     display: block;
-    font-size: 13px;
-    font-weight: 600;
+    font-size: 14px;
+    font-weight: 700;
     margin-bottom: 8px;
-    color: var(--text-main);
+    color: #1e293b;
 }
 
-/* Input kotak abu-abu muda ala TikTok */
+/* Input style abu-abu halus tanpa border seperti screenshot 2 */
 .input-field, .custom-select-btn {
-    width: 100%;
-    padding: 14px 16px;
-    background: var(--input-bg);
-    border: none;
-    border-radius: 6px;
-    color: var(--text-main);
-    font-size: 15px;
     font-family: var(--font-body);
-    transition: all 0.2s ease;
+    width: 100%;
+    padding: 16px 18px;
+    background: #f1f5f9;
+    border: 1px solid transparent;
+    border-radius: 12px;
+    font-size: 15px;
+    color: #334155;
+    outline: none;
+    transition: all 0.2s;
+    cursor: pointer;
 }
 
 .input-field:focus {
-    outline: none;
-    background: rgba(22, 24, 35, 0.08);
-}
-
-.input-field::placeholder {
-    color: var(--text-muted);
+    background: #ffffff;
+    border-color: #38bdf8;
+    box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.1);
 }
 
 .custom-select-btn {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    cursor: pointer;
 }
 
-.custom-select-btn.selected {
+/* Khusus Form Login yang ada border halusnya */
+#panel-pengelola .input-field {
     background: #ffffff;
-    border: 1px solid var(--border-light);
+    border: 1px solid #cbd5e1;
 }
+#panel-pengelola .input-field:focus { border-color: #3b82f6; }
+#panel-pengelola label { text-transform: uppercase; font-size: 12px; letter-spacing: 1px; }
 
-/* ========== BUTTONS ========== */
+/* ========== TOMBOL (BUTTONS) ========== */
 button {
     font-family: var(--font-body);
-}
-
-.btn-primary {
     width: 100%;
-    padding: 14px;
-    background: var(--primary-btn);
-    color: #ffffff;
+    padding: 16px;
     border: none;
-    border-radius: 6px;
+    border-radius: 12px;
     font-size: 15px;
     font-weight: 600;
     cursor: pointer;
     margin-bottom: 15px;
-    transition: background 0.2s;
+    transition: 0.2s;
 }
+button:active { transform: scale(0.98); }
 
-.btn-primary:hover {
-    background: var(--primary-btn-hover);
-}
+/* Tombol Absensi Utama (Merah Pink) */
+.btn-primary { background: #f43f5e; color: white; }
+.btn-primary:hover { background: #e11d48; }
 
-.btn-secondary {
-    width: 100%;
-    padding: 14px;
-    background: transparent;
-    color: var(--text-main);
-    border: 1px solid var(--border-light);
-    border-radius: 6px;
-    font-size: 15px;
-    font-weight: 600;
-    cursor: pointer;
-    margin-bottom: 15px;
-    transition: background 0.2s;
-}
+/* Tombol Login (Biru) */
+.btn-blue { background: #3b82f6; color: white; }
+.btn-blue:hover { background: #2563eb; }
 
-.btn-secondary:hover {
-    background: var(--input-bg);
-}
+/* Tombol Outline (Putih) */
+.btn-outline { background: #ffffff; color: #0f172a; border: 1px solid #cbd5e1; }
+.btn-outline:hover { background: #f8fafc; }
 
-.btn-text {
-    width: 100%;
-    padding: 10px;
-    background: none;
-    border: none;
-    color: var(--text-muted);
-    font-weight: 600;
-    cursor: pointer;
-    font-size: 14px;
-}
+.btn-text { background: transparent; color: #64748b; font-weight: 600; }
 
-.btn-text:hover {
-    color: var(--text-main);
-    text-decoration: underline;
-}
-
-/* Tombol Admin */
-.btn-info, .btn-danger {
-    padding: 12px 16px;
-    border-radius: 6px;
-    font-weight: 600;
-    font-size: 14px;
-    cursor: pointer;
-    border: none;
-    width: 100%;
-    margin-bottom: 10px;
-}
-
-.btn-info {
-    background: var(--input-bg);
-    color: var(--text-main);
-}
-.btn-info:hover {
-    background: var(--border-light);
-}
-
-.btn-danger {
-    background: rgba(254, 44, 85, 0.1);
-    color: var(--primary-btn);
-}
-.btn-danger:hover {
-    background: rgba(254, 44, 85, 0.15);
-}
-
-.btn-small {
-    padding: 6px 12px;
-    border-radius: 4px;
-    font-weight: 600;
-    cursor: pointer;
-    font-size: 12px;
-    border: none;
-}
-.btn-delete-small { background: rgba(254, 44, 85, 0.1); color: var(--primary-btn); }
-.btn-foto-small { background: var(--input-bg); color: var(--text-main); }
-
-/* ========== ADMIN CONTROLS & TABLE ========== */
+/* ===== TOMBOL GRID ADMIN (Warna-warni sesuai screenshot) ===== */
 .admin-controls {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 10px;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.btn-abu { background: #f1f5f9; color: #0f172a; }
+.btn-cyan { background: #67e8f9; color: #0f172a; }
+.btn-oren { background: #f59e0b; color: white; }
+.btn-merah { background: #ef4444; color: white; }
+.btn-pink-soft { background: #ffe4e6; color: #e11d48; }
+
+.btn-small { padding: 8px 12px; font-size: 12px; border-radius: 6px; margin: 0; }
+.btn-delete-small { background: #fee2e2; color: #ef4444; }
+
+/* ========== LIST NAMA & TABEL ========== */
+.name-list {
+    max-height: 200px;
+    overflow-y: auto;
+    border-radius: 12px;
+    background: #f8fafc;
     margin-bottom: 15px;
 }
+.name-item {
+    padding: 15px 18px;
+    cursor: pointer;
+    border-bottom: 1px solid #e2e8f0;
+    font-size: 14px;
+}
+.name-item.terpilih { background: #e0f2fe; color: #0284c7; font-weight: 700; }
+.name-item.disabled { color: #94a3b8; pointer-events: none; }
 
 .table-responsive {
     width: 100%;
     overflow-x: auto;
-    margin: 20px 0;
-    border: 1px solid var(--border-light);
-    border-radius: 8px;
-}
-
-table {
-    width: 100%;
-    border-collapse: collapse;
-    min-width: 600px;
-    background: #fff;
-}
-
-th, td {
-    padding: 12px 15px;
-    text-align: left;
-    border-bottom: 1px solid var(--border-light);
-    font-size: 14px;
-    color: var(--text-main);
-}
-
-th {
-    background: var(--input-bg);
-    font-weight: 600;
-    color: var(--text-muted);
-    font-size: 13px;
-    text-transform: uppercase;
-}
-
-/* Status Badge */
-.status-badge {
-    padding: 4px 10px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: 600;
-}
-
-/* ========== LIST NAMA SISWA ========== */
-.name-list {
-    max-height: 200px;
-    overflow-y: auto;
-    border: 1px solid var(--border-light);
-    border-radius: 6px;
-    margin-top: 5px;
-    background: #fff;
-}
-
-.name-item {
-    padding: 14px 16px;
-    cursor: pointer;
-    border-bottom: 1px solid var(--border-light);
-    font-size: 14px;
-    transition: background 0.2s;
-}
-
-.name-item:hover {
-    background: var(--input-bg);
-}
-
-.name-item.terpilih {
-    background: rgba(254, 44, 85, 0.05);
-    color: var(--primary-btn);
-    font-weight: 600;
-}
-
-/* ========== AREA KAMERA ========== */
-#area-kamera {
-    background: var(--input-bg);
-    padding: 15px;
-    border-radius: 8px;
-    text-align: center;
-}
-
-.camera-wrapper {
-    position: relative;
-    width: 100%;
-    max-width: 300px;
-    aspect-ratio: 3/4;
-    margin: 0 auto 15px auto;
-    background: #000;
-    border-radius: 8px;
-    overflow: hidden;
-}
-
-video, canvas {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-}
-
-.hidden {
-    display: none !important;
-}
-
-/* ========== MODAL POPUP (Slide dari Bawah ala Aplikasi Mobile) ========== */
-.modal-overlay {
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
-    display: flex;
-    justify-content: center;
-    align-items: flex-end;
-    opacity: 0;
-    visibility: hidden;
-    transition: all 0.3s;
-    z-index: 1000;
-}
-
-.modal-overlay.show {
-    opacity: 1;
-    visibility: visible;
-}
-
-.modal-content {
-    background: #fff;
-    width: 100%;
-    max-width: 480px;
-    padding: 20px;
-    border-radius: 16px 16px 0 0;
-    transform: translateY(100%);
-    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    max-height: 85vh;
-    display: flex;
-    flex-direction: column;
-}
-
-.modal-overlay.show .modal-content {
-    transform: translateY(0);
-}
-
-@media (min-width: 481px) {
-    .modal-overlay { align-items: center; }
-    .modal-content { border-radius: 12px; transform: translateY(20px); }
-}
-
-.modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
     margin-bottom: 15px;
 }
+table { width: 100%; border-collapse: collapse; min-width: 600px; }
+th { background: #f8fafc; padding: 14px; font-size: 13px; color: #64748b; text-transform: uppercase; font-weight: 600; text-align: left; border-bottom: 1px solid #e2e8f0;}
+td { padding: 14px; font-size: 14px; border-bottom: 1px solid #e2e8f0; color: #1e293b; }
 
-.modal-header h3 {
-    font-size: 18px;
-    font-weight: 700;
-    color: var(--text-main);
+.status-badge { padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 700; }
+
+/* ========== KAMERA ========== */
+.camera-wrapper {
+    width: 100%;
+    border-radius: 16px;
+    overflow: hidden;
+    background: #000;
+    margin-bottom: 15px;
 }
+video, canvas { width: 100%; display: block; transform: scaleX(-1); }
+#canvas-kamera { transform: none; }
+.hidden { display: none !important; }
 
-.close-btn {
-    background: var(--input-bg);
-    border: none;
-    font-size: 16px;
-    cursor: pointer;
-    color: var(--text-main);
-    width: 32px; height: 32px;
-    border-radius: 50%;
+/* ========== MODAL ========== */
+.modal-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(15,23,42,0.6);
     display: flex; justify-content: center; align-items: center;
+    opacity: 0; visibility: hidden; transition: 0.3s; z-index: 1000;
 }
-
-.modal-item {
-    padding: 15px;
-    border-bottom: 1px solid var(--border-light);
-    font-size: 15px;
-    cursor: pointer;
+.modal-overlay.show { opacity: 1; visibility: visible; }
+.modal-content {
+    background: #fff; width: 90%; max-width: 400px;
+    border-radius: 20px; padding: 25px;
+    transform: scale(0.9); transition: 0.3s;
+    max-height: 80vh; overflow-y: auto;
 }
+.modal-overlay.show .modal-content { transform: scale(1); }
+.modal-header { display: flex; justify-content: space-between; margin-bottom: 20px; }
+.modal-header h3 { font-size: 18px; font-weight: 700; }
+.close-btn { background: #f1f5f9; border: none; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; }
+.modal-item { padding: 15px; border-bottom: 1px solid #f1f5f9; cursor: pointer; font-weight: 600; text-align: center;}
+.modal-item:hover { background: #f8fafc; color: #38bdf8; }
 
-.modal-item:hover {
-    background: var(--input-bg);
-}
-
-#list-kelas-container, #list-admin-kelas-pilih-container {
-    overflow-y: auto;
-    flex: 1;
-}
-
-/* ========== CUSTOM LOADING ANIMATION (TIKTOK STYLE) ========== */
-/* Ini akan menimpa loading bawaan SweetAlert2 tanpa harus mengubah struktur JS-nya */
-div:where(.swal2-container) .swal2-loader {
-    border: none !important;
-    animation: none !important;
-    position: relative;
-    width: 50px;
-    height: 50px;
-    background: transparent !important;
+/* ========== ANIMASI LOADING MZ-LOADER (3 BOLA) ========== */
+.mz-loader-container {
     display: flex;
-    justify-content: center;
+    flex-direction: column;
     align-items: center;
-    margin: 20px auto;
+    justify-content: center;
+    padding: 20px 0;
 }
 
-div:where(.swal2-container) .swal2-loader::before,
-div:where(.swal2-container) .swal2-loader::after {
-    content: '';
-    position: absolute;
-    width: 20px;
-    height: 20px;
+.mz-loader {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 15px;
+    height: 50px;
+    margin-bottom: 20px;
+}
+
+.mz-loader span {
+    height: 25px;
+    width: 25px;
+    background-color: rgba(0, 213, 255, 1);
     border-radius: 50%;
-    mix-blend-mode: multiply; /* Menghasilkan warna gelap saat lingkaran tumpang tindih */
-    animation: tiktok-spin 1s infinite linear;
+    animation: mz-bounce 0.6s ease-in-out infinite alternate;
 }
 
-div:where(.swal2-container) .swal2-loader::before {
-    background-color: #25f4ee; /* Cyan */
-    animation-name: tiktok-spin-left;
+.mz-loader span:nth-child(1) { animation-delay: 0s; }
+.mz-loader span:nth-child(2) { animation-delay: 0.2s; }
+.mz-loader span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes mz-bounce {
+    0% { transform: translateY(0); }
+    100% { transform: translateY(-25px); }
 }
 
-div:where(.swal2-container) .swal2-loader::after {
-    background-color: #fe2c55; /* Pink/Red */
-    animation-name: tiktok-spin-right;
-}
-
-@keyframes tiktok-spin-left {
-    0%, 100% { transform: translateX(-12px) scale(1); z-index: 1; }
-    25% { transform: translateX(0) scale(1.3); z-index: 2; }
-    50% { transform: translateX(12px) scale(1); z-index: 1; }
-    75% { transform: translateX(0) scale(0.7); z-index: 0; }
-}
-
-@keyframes tiktok-spin-right {
-    0%, 100% { transform: translateX(12px) scale(1); z-index: 0; }
-    25% { transform: translateX(0) scale(0.7); z-index: 0; }
-    50% { transform: translateX(-12px) scale(1); z-index: 1; }
-    75% { transform: translateX(0) scale(1.3); z-index: 2; }
-}
-
-/* Merapikan Popup SweetAlert agar senada dengan Tema Minimalis */
-div:where(.swal2-container) .swal2-popup {
-    border-radius: 12px;
+.mz-text {
     font-family: var(--font-body);
-    color: var(--text-main);
-    padding-bottom: 25px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #1e293b;
 }
 
-div:where(.swal2-container) .swal2-title {
-    color: var(--text-main);
-    font-weight: 700;
-}
-
-div:where(.swal2-container) button:where(.swal2-styled).swal2-confirm {
-    background-color: var(--primary-btn) !important;
-    border-radius: 6px !important;
-    font-weight: 600 !important;
-}
-
-div:where(.swal2-container) button:where(.swal2-styled).swal2-cancel {
-    background-color: var(--input-bg) !important;
-    color: var(--text-main) !important;
-    border-radius: 6px !important;
-    font-weight: 600 !important;
-}
+/* Modifikasi SweetAlert Bawaan */
+div:where(.swal2-container) .swal2-popup { border-radius: 20px; font-family: var(--font-body); }
+div:where(.swal2-container) button:where(.swal2-styled).swal2-confirm { background-color: #3b82f6 !important; border-radius: 10px !important; }
+div:where(.swal2-container) button:where(.swal2-styled).swal2-cancel { background-color: #f1f5f9 !important; color: #0f172a !important; }
