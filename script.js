@@ -805,7 +805,7 @@ async function daftarkanSidikJari() {
     if (currentUser && currentUser.username) {
         username = currentUser.username;
     } else {
-        return Swal.fire('Sesi Tidak Valid', 'Sistem gagal mendeteksi akun Anda. Silakan Logout dan Login ulang menggunakan password.', 'warning');
+        return Swal.fire('Sidik Jari Tidak Valid', 'Sistem gagal mendeteksi akun Anda. Silakan Logout dan Login ulang menggunakan password.', 'warning');
     }
 
     const challenge = new Uint8Array(32); window.crypto.getRandomValues(challenge);
@@ -830,10 +830,10 @@ async function daftarkanSidikJari() {
         localStorage.setItem('biometric_username', username);
         localStorage.setItem('biometric_credential_id', btoa(String.fromCharCode(...new Uint8Array(credential.rawId))));
         
-        Swal.fire({ title: 'Berhasil!', text: `Sidik jari untuk akun [${username}] berhasil didaftarkan!`, icon: 'success' });
+        Swal.fire({ title: 'Berhasil!', text: `Sidik jari untuk akun [${username}] berhasil ditambahkan!`, icon: 'success' });
     } catch (err) {
         console.error(err);
-        Swal.fire('Gagal', 'Pendaftaran sidik jari dibatalkan atau terjadi kesalahan sistem.', 'error');
+        Swal.fire('Gagal', 'Harap atur ulang!.', 'error');
     }
 }
 
@@ -846,7 +846,7 @@ async function loginDenganSidikJari() {
     const savedCredIdStr = localStorage.getItem('biometric_credential_id');
 
     if (!savedUser || !savedCredIdStr) {
-        return Swal.fire('Belum Terdaftar', 'Anda belum mendaftarkan sidik jari di HP ini. Silakan login manual dengan password terlebih dahulu.', 'warning');
+        return Swal.fire('Belum Terdaftar', 'Silakan login manual dengan password terlebih dahulu.', 'warning');
     }
 
     const challenge = new Uint8Array(32); window.crypto.getRandomValues(challenge);
@@ -885,7 +885,7 @@ async function loginDenganSidikJari() {
             return;
         }
 
-        Swal.fire('Error', `Akun [${savedUser}] tidak ditemukan di sistem database.`, 'error');
+        Swal.fire('Error', `Akun [${savedUser}] tidak ditemukan`, 'error');
 
     } catch (err) {
         console.error(err);
