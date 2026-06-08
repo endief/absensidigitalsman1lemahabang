@@ -38,9 +38,14 @@ const PremiumAlert = {
         this.init();
         const overlay = document.getElementById('premium-overlay');
         const container = document.getElementById('p-icon-container');
+        const actions = document.getElementById('p-actions');
+        
         document.getElementById('p-title').innerText = title || 'Memproses...';
         document.getElementById('p-text').innerText = text || 'Mohon tunggu sebentar';
-        document.getElementById('p-actions').classList.remove('show'); // Sembunyikan tombol
+        
+        // Kunci mati tampilan tombol
+        actions.classList.remove('show');
+        actions.style.display = 'none'; 
 
         container.className = 'p-icon-container is-loading';
         document.querySelectorAll('.p-svg').forEach(el => el.style.display = 'none');
@@ -58,24 +63,24 @@ const PremiumAlert = {
             document.getElementById('p-title').innerText = title;
             document.getElementById('p-text').innerText = text;
 
-            // Set ikon menjadi warning (tanda seru)
             container.className = 'p-icon-container is-finished is-warning';
             document.querySelectorAll('.p-svg').forEach(el => el.style.display = 'none');
             document.getElementById('p-svg-warning').style.display = 'block';
 
-            // Atur gaya tombol confirm
             btnConfirm.innerText = confirmText;
             btnConfirm.className = isOrangeColor ? 'p-btn p-btn-confirm orange' : 'p-btn p-btn-confirm';
 
-            actions.classList.add('show');
+            // Tampilkan tombol dengan mulus
+            actions.style.display = 'flex';
+            setTimeout(() => actions.classList.add('show'), 10);
             overlay.classList.add('show');
 
             const handleClose = (result) => {
                 btnCancel.onclick = null;
                 btnConfirm.onclick = null;
-                // Jika batal, tutup overlay. Jika Ya, biarkan terbuka karena akan ditimpa loading
                 if (!result) { 
                     actions.classList.remove('show'); 
+                    setTimeout(() => actions.style.display = 'none', 300);
                     overlay.classList.remove('show'); 
                 }
                 resolve(result);
@@ -89,7 +94,10 @@ const PremiumAlert = {
         this.init();
         const overlay = document.getElementById('premium-overlay');
         const container = document.getElementById('p-icon-container');
-        document.getElementById('p-actions').classList.remove('show');
+        const actions = document.getElementById('p-actions');
+        
+        actions.classList.remove('show');
+        setTimeout(() => actions.style.display = 'none', 300);
 
         if (!overlay.classList.contains('show')) {
             document.getElementById('p-title').innerText = title;
