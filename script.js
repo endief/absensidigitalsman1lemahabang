@@ -74,7 +74,6 @@ const iconCrossSVG = `<svg class="anim-cross" width="16" height="16" viewBox="0 
 // Helper Render Status Badge
 function getStatusBadge(status) {
     if (status === 'Hadir') return `<span class="badge-status badge-hadir">${iconCheckSVG} Hadir</span>`;
-    // Diubah dari Alpha menjadi Tidak Hadir
     if (status === 'Tidak Hadir') return `<span class="badge-status badge-alpha">${iconCrossSVG} Tidak Hadir</span>`;
     return `<span class="badge-status badge-belum">Belum Absen</span>`;
 }
@@ -107,9 +106,9 @@ function initFirebaseListeners() {
 initFirebaseListeners();
 
 // ==== KONFIGURASI GEOFENCING ====
-const KANTOR_LAT = -6.830274;
-const KANTOR_LON = 108.621139;
-const BATAS_JARAK_METER = 65;
+const KANTOR_LAT = -6.818837;
+const KANTOR_LON = 108.629478;
+const BATAS_JARAK_METER = 75; 
 
 function hitungJarak(lat1, lon1, lat2, lon2) {
     const R = 6371e3;
@@ -159,7 +158,7 @@ async function loginUmum() {
     const adminSnap = await firebase.database().ref('admin/' + user).once('value');
     if (adminSnap.exists() && adminSnap.val().password === pass) {
         Swal.close();
-        currentUser = { role: 'admin' };
+        currentUser = { role: 'admin', username: user }; 
         document.getElementById('admin-user').value = ''; document.getElementById('admin-pass').value = '';
         switchPanel('panel-dashboard-admin', true);
         renderTabelAdmin(); updateTeksTombolBukaTutup();
@@ -236,7 +235,7 @@ async function tambahAdminKelas() {
     if (adminSnap.exists() || adminKelasSnap.exists()) return Swal.fire({ title: 'Gagal', text: 'Username sudah digunakan.', icon: 'error', timer: 2000, showConfirmButton: false });
     
     await firebase.database().ref('admin_perkelas/' + username).set({ password, kelas });
-    Swal.fire({ title: 'Sukses', text: 'Admin kelas ditambahkan.', icon: 'success', timer: 2000, showConfirmButton: false });
+    Swal.fire({ title: 'Sukses', text: 'Admin kelas berhasil ditambahkan.', icon: 'success', timer: 2000, showConfirmButton: false });
     document.getElementById('admin-baru-user').value = ''; document.getElementById('admin-baru-pass').value = ''; document.getElementById('admin-baru-kelas').value = '';
     renderDaftarAdminKelas();
 }
@@ -251,7 +250,7 @@ async function hapusAdminKelas(username) {
     });
 }
 
-// ==== ADMIN UTAMA: TABEL & AKSI ====
+// ==== ADMIN UTAMA: TABEL ====
 function renderTabelAdmin() {
     const tbody = document.getElementById('tbody-rekap');
     tbody.innerHTML = "";
@@ -259,7 +258,6 @@ function renderTabelAdmin() {
     
     dbAbsensi.forEach(data => {
         let badgeHTML = getStatusBadge(data.status);
-        // Hanya munculkan tombol Foto jika statusnya Hadir
         let btnFoto = (data.status === 'Hadir' && data.foto) ? `<button class="btn-small btn-abu" onclick="lihatFotoPreview('${data.foto}')">Lihat</button>` : '-';
         let btnHapus = `<button class="btn-small btn-delete-small" onclick="hapusDataIndividu('${data.id}')">Hapus</button>`;
         let tr = document.createElement('tr');
@@ -364,7 +362,6 @@ async function prosesTutupAbsensi(hariDitutup) {
                 if (!hasAbsen) {
                     const uniqueId = "ID_" + timeNow.getTime() + "_" + Math.random().toString(36).substr(2, 5);
                     updates['absensi/' + uniqueId] = {
-                        // Keterangan diubah jadi '-' agar tidak muncul teks di kolom Bukti
                         kelas: kls, hari: hariDitutup, nama: nama, status: 'Tidak Hadir', keterangan: '-', foto: '', filePath: '', waktuStr: waktuStr, lockKey: `absen_${kls}_${nama}_${hariDitutup}`
                     };
                     const safeNama = sanitizeKey(nama); 
@@ -417,7 +414,6 @@ function renderTabelKelas() {
     tbody.innerHTML = "";
     dataKelas.forEach(data => {
         let badgeHTML = getStatusBadge(data.status);
-        // Hanya munculkan tombol Foto jika statusnya Hadir
         let btnFoto = (data.status === 'Hadir' && data.foto) ? `<button class="btn-small btn-abu" onclick="lihatFotoPreview('${data.foto}')">Lihat</button>` : '-';
         let btnHapus = `<button class="btn-small btn-delete-small" onclick="hapusDataIndividu('${data.id}')">Hapus</button>`;
         let tr = document.createElement('tr');
@@ -441,7 +437,7 @@ async function resetDataKelas() {
             const filePaths = dataKelas.map(d => d.filePath).filter(Boolean);
             if (filePaths.length > 0) await supabaseClient.storage.from('foto-absensi').remove(filePaths);
             for (const item of dataKelas) await firebase.database().ref('absensi/' + item.id).remove();
-            Swal.fire({ title: 'Direset!', text: `Data harian dihapus.`, icon: 'success' });
+            Swal.fire({ title: 'Direset!', text: `Absensi dihapus.`, icon: 'success' });
         }
     });
 }
@@ -494,7 +490,7 @@ function renderTabelKehadiran() {
     daftarNama.forEach(nama => {
         let record = dbFiltered.find(item => item.nama === nama);
         if (record) hasilAkhir.push({ nama, status: record.status, keterangan: record.keterangan, foto: record.foto });
-        else hasilAkhir.push({ nama, status: 'Belum Absen', keterangan: '-', foto: null });
+        else html = hasilAkhir.push({ nama, status: 'Belum Absen', keterangan: '-', foto: null });
     });
     if (adminFilterStatus !== 'Semua') hasilAkhir = hasilAkhir.filter(item => item.status === adminFilterStatus);
     
@@ -505,7 +501,6 @@ function renderTabelKehadiran() {
         let badgeHTML = getStatusBadge(item.status);
         let kontenBukti = '-';
         
-        // Hanya proses tombol foto jika statusnya Hadir
         if (item.status === 'Hadir') {
             let btnFoto = item.foto ? `<button class="btn-small btn-abu" onclick="lihatFotoPreview('${item.foto}')">Lihat</button>` : '';
             let infoKet = item.keterangan !== "-" ? `<div style="font-size:12px; color:#64748b; margin-top:4px;">${item.keterangan}</div>` : '';
@@ -546,7 +541,6 @@ function renderTabelKehadiranKelas() {
         let badgeHTML = getStatusBadge(item.status);
         let kontenBukti = '-';
         
-        // Hanya proses tombol foto jika statusnya Hadir
         if (item.status === 'Hadir') {
             let btnFoto = item.foto ? `<button class="btn-small btn-abu" onclick="lihatFotoPreview('${item.foto}')">Lihat</button>` : '';
             let infoKet = item.keterangan !== "-" ? `<div style="font-size:12px; color:#64748b; margin-top:4px;">${item.keterangan}</div>` : '';
@@ -772,113 +766,6 @@ async function hapusFileDariSupabase(filePath) {
     try { const { error } = await supabaseClient.storage.from('foto-absensi').remove([filePath]); if (error) console.warn('Gagal hapus file:', error); } catch (err) { console.warn('Error hapus file:', err); }
 }
 
-// ==========================================
-// ==== FITUR LOGIN SIDIK JARI (WEBAUTHN) ====
-// ==========================================
-
-async function daftarkanSidikJari() {
-    if (!window.PublicKeyCredential) {
-        return Swal.fire('Tidak Didukung', 'Browser atau HP Anda tidak mendukung fitur sidik jari.', 'error');
-    }
-
-    // Pastikan sistem benar-benar menangkap username yang sedang login
-    let username = "";
-    if (currentUser && currentUser.username) {
-        username = currentUser.username;
-    } else {
-        return Swal.fire('Sidik Jari Tidak Valid', 'Sistem gagal mendeteksi username Anda. Silakan Logout dan Login ulang menggunakan password.', 'warning');
-    }
-
-    // Membuat identifier acak untuk perangkat ini
-    const challenge = new Uint8Array(32); window.crypto.getRandomValues(challenge);
-    const userId = new Uint8Array(16); window.crypto.getRandomValues(userId);
-
-    const publicKey = {
-        challenge: challenge,
-        rp: { name: "Absensi SMANSALA", id: window.location.hostname },
-        user: {
-            id: userId,
-            name: username,
-            displayName: "Pengelola " + username
-        },
-        pubKeyCredParams: [{ type: "public-key", alg: -7 }, { type: "public-key", alg: -257 }],
-        authenticatorSelection: { authenticatorAttachment: "platform" },
-        timeout: 60000
-    };
-
-    try {
-        const credential = await navigator.credentials.create({ publicKey });
-        
-        // Simpan data dengan aman
-        localStorage.setItem('biometric_username', username);
-        localStorage.setItem('biometric_credential_id', btoa(String.fromCharCode(...new Uint8Array(credential.rawId))));
-        
-        // Munculkan notifikasi yang menampilkan username asli untuk memastikan
-        Swal.fire({ title: 'Berhasil!', text: `Sidik jari untuk akun [${username}] berhasil didaftarkan!`, icon: 'success' });
-    } catch (err) {
-        console.error(err);
-        Swal.fire('Gagal', 'Pendaftaran sidik jari dibatalkan atau terjadi kesalahan sistem.', 'error');
-    }
-}
-
-async function loginDenganSidikJari() {
-    if (!window.PublicKeyCredential) {
-        return Swal.fire('Tidak Didukung', 'Browser atau HP Anda tidak mendukung fitur sidik jari.', 'error');
-    }
-
-    const savedUser = localStorage.getItem('biometric_username');
-    const savedCredIdStr = localStorage.getItem('biometric_credential_id');
-
-    if (!savedUser || !savedCredIdStr) {
-        return Swal.fire('Belum Terdaftar', 'Silakan login manual dengan password terlebih dahulu.', 'warning');
-    }
-
-    const challenge = new Uint8Array(32); window.crypto.getRandomValues(challenge);
-    const credId = Uint8Array.from(atob(savedCredIdStr), c => c.charCodeAt(0));
-
-    const publicKey = {
-        challenge: challenge,
-        rpId: window.location.hostname,
-        allowCredentials: [{ type: "public-key", id: credId }],
-        userVerification: "required",
-        timeout: 60000
-    };
-
-    try {
-        await navigator.credentials.get({ publicKey });
-        
-        showCustomLoading('Memverifikasi...', 'Masuk dengan Sidik Jari');
-
-        // Cek database Firebase menggunakan username yang tersimpan di HP
-        const adminSnap = await firebase.database().ref('admin/' + savedUser).once('value');
-        if (adminSnap.exists()) {
-            Swal.close();
-            currentUser = { role: 'admin', username: savedUser };
-            switchPanel('panel-dashboard-admin', true);
-            renderTabelAdmin(); updateTeksTombolBukaTutup();
-            return;
-        }
-
-        const adminKelasSnap = await firebase.database().ref('admin_perkelas/' + savedUser).once('value');
-        if (adminKelasSnap.exists()) {
-            Swal.close();
-            const data = adminKelasSnap.val();
-            currentUser = { role: 'admin_kelas', username: savedUser, kelas: data.kelas };
-            switchPanel('panel-dashboard-kelas', true);
-            document.getElementById('admin-kelas-display').innerText = `Admin Kelas ${data.kelas}`;
-            renderTabelKelas();
-            return;
-        }
-
-        Swal.fire('Error', `Akun [${savedUser}] tidak ditemukan.`, 'error');
-
-    } catch (err) {
-        console.error(err);
-        Swal.fire('Batal', 'Verifikasi sidik jari tidak berhasil.', 'error');
-    }
-}
-
-
 // ==== NAVIGASI PANEL ====
 function switchPanel(panelId, isAdminPanel = false) {
     const currentActive = document.querySelector('.panel.active'); const mainContainer = document.getElementById('main-container');
@@ -904,3 +791,104 @@ function closeModal(id) { document.getElementById(id).classList.remove('show'); 
 
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
 renderNama();
+
+// ==========================================
+// ==== FITUR LOGIN SIDIK JARI (WEBAUTHN) ====
+// ==========================================
+
+async function daftarkanSidikJari() {
+    if (!window.PublicKeyCredential) {
+        return Swal.fire('Tidak Didukung', 'Browser atau HP Anda tidak mendukung fitur sidik jari.', 'error');
+    }
+
+    let username = "";
+    if (currentUser && currentUser.username) {
+        username = currentUser.username;
+    } else {
+        return Swal.fire('Sesi Tidak Valid', 'Sistem gagal mendeteksi akun Anda. Silakan Logout dan Login ulang menggunakan password.', 'warning');
+    }
+
+    const challenge = new Uint8Array(32); window.crypto.getRandomValues(challenge);
+    const userId = new Uint8Array(16); window.crypto.getRandomValues(userId);
+
+    const publicKey = {
+        challenge: challenge,
+        rp: { name: "Absensi SMANSALA", id: window.location.hostname },
+        user: {
+            id: userId,
+            name: username,
+            displayName: "Pengelola " + username
+        },
+        pubKeyCredParams: [{ type: "public-key", alg: -7 }, { type: "public-key", alg: -257 }],
+        authenticatorSelection: { authenticatorAttachment: "platform" },
+        timeout: 60000
+    };
+
+    try {
+        const credential = await navigator.credentials.create({ publicKey });
+        
+        localStorage.setItem('biometric_username', username);
+        localStorage.setItem('biometric_credential_id', btoa(String.fromCharCode(...new Uint8Array(credential.rawId))));
+        
+        Swal.fire({ title: 'Berhasil!', text: `Sidik jari untuk akun [${username}] berhasil didaftarkan!`, icon: 'success' });
+    } catch (err) {
+        console.error(err);
+        Swal.fire('Gagal', 'Pendaftaran sidik jari dibatalkan atau terjadi kesalahan sistem.', 'error');
+    }
+}
+
+async function loginDenganSidikJari() {
+    if (!window.PublicKeyCredential) {
+        return Swal.fire('Tidak Didukung', 'Browser atau HP Anda tidak mendukung fitur sidik jari.', 'error');
+    }
+
+    const savedUser = localStorage.getItem('biometric_username');
+    const savedCredIdStr = localStorage.getItem('biometric_credential_id');
+
+    if (!savedUser || !savedCredIdStr) {
+        return Swal.fire('Belum Terdaftar', 'Anda belum mendaftarkan sidik jari di HP ini. Silakan login manual dengan password terlebih dahulu.', 'warning');
+    }
+
+    const challenge = new Uint8Array(32); window.crypto.getRandomValues(challenge);
+    const credId = Uint8Array.from(atob(savedCredIdStr), c => c.charCodeAt(0));
+
+    const publicKey = {
+        challenge: challenge,
+        rpId: window.location.hostname,
+        allowCredentials: [{ type: "public-key", id: credId }],
+        userVerification: "required",
+        timeout: 60000
+    };
+
+    try {
+        await navigator.credentials.get({ publicKey });
+        
+        showCustomLoading('Memverifikasi...', 'Masuk dengan Sidik Jari');
+
+        const adminSnap = await firebase.database().ref('admin/' + savedUser).once('value');
+        if (adminSnap.exists()) {
+            Swal.close();
+            currentUser = { role: 'admin', username: savedUser };
+            switchPanel('panel-dashboard-admin', true);
+            renderTabelAdmin(); updateTeksTombolBukaTutup();
+            return;
+        }
+
+        const adminKelasSnap = await firebase.database().ref('admin_perkelas/' + savedUser).once('value');
+        if (adminKelasSnap.exists()) {
+            Swal.close();
+            const data = adminKelasSnap.val();
+            currentUser = { role: 'admin_kelas', username: savedUser, kelas: data.kelas };
+            switchPanel('panel-dashboard-kelas', true);
+            document.getElementById('admin-kelas-display').innerText = `Admin Kelas ${data.kelas}`;
+            renderTabelKelas();
+            return;
+        }
+
+        Swal.fire('Error', `Akun [${savedUser}] tidak ditemukan di sistem database.`, 'error');
+
+    } catch (err) {
+        console.error(err);
+        Swal.fire('Batal', 'Verifikasi sidik jari tidak berhasil.', 'error');
+    }
+}
