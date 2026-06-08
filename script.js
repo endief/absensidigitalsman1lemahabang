@@ -781,8 +781,13 @@ async function daftarkanSidikJari() {
         return Swal.fire('Tidak Didukung', 'Browser atau HP Anda tidak mendukung fitur sidik jari.', 'error');
     }
 
-    // Mengambil username admin yang sedang login
-    const username = currentUser.username || document.getElementById('admin-user').value || 'AdminUtama';
+    // Pastikan sistem benar-benar menangkap username yang sedang login
+    let username = "";
+    if (currentUser && currentUser.username) {
+        username = currentUser.username;
+    } else {
+        return Swal.fire('Sidik Jari Tidak Valid', 'Sistem gagal mendeteksi username Anda. Silakan Logout dan Login ulang menggunakan password.', 'warning');
+    }
 
     // Membuat identifier acak untuk perangkat ini
     const challenge = new Uint8Array(32); window.crypto.getRandomValues(challenge);
@@ -797,21 +802,22 @@ async function daftarkanSidikJari() {
             displayName: "Pengelola " + username
         },
         pubKeyCredParams: [{ type: "public-key", alg: -7 }, { type: "public-key", alg: -257 }],
-        authenticatorSelection: { authenticatorAttachment: "platform" }, // Memaksa pakai sidik jari/FaceID bawaan HP
+        authenticatorSelection: { authenticatorAttachment: "platform" },
         timeout: 60000
     };
 
     try {
         const credential = await navigator.credentials.create({ publicKey });
         
-        // Simpan data bahwa perangkat ini sudah didaftarkan untuk username tersebut
+        // Simpan data dengan aman
         localStorage.setItem('biometric_username', username);
         localStorage.setItem('biometric_credential_id', btoa(String.fromCharCode(...new Uint8Array(credential.rawId))));
         
-        Swal.fire({ title: 'Berhasil!', text: 'Sidik jari perangkat ini berhasil didaftarkan. Anda bisa menggunakannya saat login nanti.', icon: 'success' });
+        // Munculkan notifikasi yang menampilkan username asli untuk memastikan
+        Swal.fire({ title: 'Berhasil!', text: `Sidik jari untuk akun [${username}] berhasil didaftarkan!`, icon: 'success' });
     } catch (err) {
         console.error(err);
-        Swal.fire('Gagal', 'Pendaftaran sidik jari dibatalkan atau gagal.', 'error');
+        Swal.fire('Gagal', 'Pendaftaran sidik jari dibatalkan atau terjadi kesalahan sistem.', 'error');
     }
 }
 
@@ -824,7 +830,7 @@ async function loginDenganSidikJari() {
     const savedCredIdStr = localStorage.getItem('biometric_credential_id');
 
     if (!savedUser || !savedCredIdStr) {
-        return Swal.fire('Belum Terdaftar', 'Anda belum mendaftarkan sidik jari di HP ini. Silakan login manual dengan password, lalu klik tombol "Daftarkan Sidik Jari" di dalam dashboard.', 'warning');
+        return Swal.fire('Belum Terdaftar', 'Silakan login manual dengan password terlebih dahulu.', 'warning');
     }
 
     const challenge = new Uint8Array(32); window.crypto.getRandomValues(challenge);
@@ -839,13 +845,11 @@ async function loginDenganSidikJari() {
     };
 
     try {
-        // Memunculkan pop-up sidik jari bawaan HP
         await navigator.credentials.get({ publicKey });
         
-        // Jika berhasil scan sidik jari, langsung proses login memotong jalur password
         showCustomLoading('Memverifikasi...', 'Masuk dengan Sidik Jari');
 
-        // Cek data user tersebut apakah Admin Utama atau Admin Kelas di Firebase
+        // Cek database Firebase menggunakan username yang tersimpan di HP
         const adminSnap = await firebase.database().ref('admin/' + savedUser).once('value');
         if (adminSnap.exists()) {
             Swal.close();
@@ -866,11 +870,11 @@ async function loginDenganSidikJari() {
             return;
         }
 
-        Swal.fire('Error', 'Akun pengelola tidak ditemukan di sistem.', 'error');
+        Swal.fire('Error', `Akun [${savedUser}] tidak ditemukan.`, 'error');
 
     } catch (err) {
         console.error(err);
-        Swal.fire('Login Gagal', 'Verifikasi sidik jari tidak valid atau dibatalkan.', 'error');
+        Swal.fire('Batal', 'Verifikasi sidik jari tidak berhasil.', 'error');
     }
 }
 
