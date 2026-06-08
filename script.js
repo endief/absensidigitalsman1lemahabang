@@ -109,7 +109,7 @@ initFirebaseListeners();
 // ==== KONFIGURASI GEOFENCING ====
 const KANTOR_LAT = -6.830274;
 const KANTOR_LON = 108.621139;
-const BATAS_JARAK_METER = 75; // Sesuai file sebelumnya (75m)
+const BATAS_JARAK_METER = 65;
 
 function hitungJarak(lat1, lon1, lat2, lon2) {
     const R = 6371e3;
