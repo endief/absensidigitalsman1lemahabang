@@ -30,7 +30,7 @@
 
         <div id="panel-pengelola" class="panel">
             <img src="https://raw.githubusercontent.com/endief/absensidigitalsman1lemahabang/250eb3dfec1bcefa494e569e92f74699f4fba057/SMANSALA.png" alt="Logo" class="logo-sekolah" onerror="this.style.display='none'">
-            <h2 class="panel-title" style="margin-bottom: 5px;">Akses Masuk Pengelola</h2>
+            <h2 class="panel-title" style="margin-bottom: 5px;">Akses Masuk</h2>
             <p style="text-align: center; color: #64748b; font-size: 14px; margin-bottom: 30px;">Masukkan Username dan Password</p>
             
             <div class="form-group">
@@ -48,7 +48,7 @@
                 </div>
             </div>
             <button class="btn-blue" onclick="loginUmum()" style="margin-top: 10px;">MASUK</button>
-            <button class="btn-outline" onclick="loginDenganSidikJari()" style="margin-bottom: 10px; font-weight: 800; color: #0f766e;">🫆</button>
+            <button class="btn-outline" onclick="loginDenganSidikJari()" style="margin-bottom: 10px; font-weight: 800; color: #0f766e;">Masuk dengan 🫆</button>
             <button class="btn-text" onclick="switchPanel('panel-awal')">KEMBALI</button>
         </div>
 
@@ -61,7 +61,7 @@
                 <button class="btn-abu" onclick="bukaModalKehadiran()">Rekap Kehadiran</button>
                 <button class="btn-abu" onclick="bukaModalKelolaAdminKelas()">Kelola Admin</button>
             </div>
-            <button class="btn-outline" onclick="daftarkanSidikJari()" style="border: 2px dashed #cbd5e1; color: #0f766e; margin-bottom: 15px;">Daftarkan Sidik Jari 🫆</button>
+            <button class="btn-outline" onclick="daftarkanSidikJari()" style="border: 2px dashed #cbd5e1; color: #0f766e; margin-bottom: 15px;">Atur Sidik Jari 🫆</button>
             
             <div class="admin-controls">
                 <button class="btn-cyan" onclick="bukaModalPeringkatKelas()">Peringkat Kelas</button>
@@ -94,7 +94,7 @@
                 <button class="btn-abu" onclick="bukaModalKehadiranKelas()">Rekap Kehadiran</button>
                 <button class="btn-cyan" onclick="bukaModalPeringkatSiswaKelas()">Siswa Terteladan</button>
             </div>
-            <button class="btn-outline" onclick="daftarkanSidikJari()" style="border: 2px dashed #cbd5e1; color: #0f766e; margin-bottom: 15px;">Daftarkan Sidik Jari 🫆</button>
+            <button class="btn-outline" onclick="daftarkanSidikJari()" style="border: 2px dashed #cbd5e1; color: #0f766e; margin-bottom: 15px;">Atur Sidik Jari 🫆</button>
 
             <div class="admin-controls">
                 <button class="btn-merah" onclick="downloadExcelKelas()" style="grid-column: span 2;">Unduh Excel Kelas</button>
@@ -149,7 +149,7 @@
                 </div>
             </div>
             <br>
-            <button class="btn-primary" onclick="kirimAbsen()">KIRIM DATA</button>
+            <button class="btn-primary" onclick="kirimAbsen()">KIRIM ABSEN</button>
             <button class="btn-text" onclick="switchPanel('panel-awal')">BATALKAN</button>
         </div>
     </div>
@@ -209,7 +209,7 @@
 
     <div id="modal-peringkat-kelas" class="modal-overlay" onclick="closeModal('modal-peringkat-kelas')">
         <div class="modal-content" onclick="event.stopPropagation()">
-            <div class="modal-header"><h3>🏆 Peringkat Kelas</h3><button class="close-btn" onclick="closeModal('modal-peringkat-kelas')"><svg width="20" height="20"><use href="#icon-close"></use></svg></button></div>
+            <div class="modal-header"><h3>Peringkat Kelas</h3><button class="close-btn" onclick="closeModal('modal-peringkat-kelas')"><svg width="20" height="20"><use href="#icon-close"></use></svg></button></div>
             <div class="table-responsive table-rank">
                 <table>
                     <thead><tr><th style="text-align:center; width:60px;">Rank</th><th>Kelas</th><th style="text-align:center; width:120px;">Tidak Hadir</th></tr></thead>
@@ -221,7 +221,7 @@
 
     <div id="modal-peringkat-siswa" class="modal-overlay" onclick="closeModal('modal-peringkat-siswa')">
         <div class="modal-content" onclick="event.stopPropagation()">
-            <div class="modal-header"><h3>🌟 Siswa Terteladan</h3><button class="close-btn" onclick="closeModal('modal-peringkat-siswa')"><svg width="20" height="20"><use href="#icon-close"></use></svg></button></div>
+            <div class="modal-header"><h3>Siswa Terteladan</h3><button class="close-btn" onclick="closeModal('modal-peringkat-siswa')"><svg width="20" height="20"><use href="#icon-close"></use></svg></button></div>
             <div style="margin-bottom: 15px;">
                 <input type="hidden" id="filter-peringkat-kelas-val" value="Semua">
                 <div class="custom-select-btn" onclick="openModal('modal-peringkat-kelas-pilih')">
@@ -239,7 +239,7 @@
 
     <div id="modal-peringkat-siswa-kelas" class="modal-overlay" onclick="closeModal('modal-peringkat-siswa-kelas')">
         <div class="modal-content" onclick="event.stopPropagation()">
-            <div class="modal-header"><h3>🌟 Terteladan Kelas</h3><button class="close-btn" onclick="closeModal('modal-peringkat-siswa-kelas')"><svg width="20" height="20"><use href="#icon-close"></use></svg></button></div>
+            <div class="modal-header"><h3>Terteladan Kelas</h3><button class="close-btn" onclick="closeModal('modal-peringkat-siswa-kelas')"><svg width="20" height="20"><use href="#icon-close"></use></svg></button></div>
             <div class="table-responsive table-rank">
                 <table>
                     <thead><tr><th style="text-align:center; width:60px;">Rank</th><th>Nama Siswa</th><th style="text-align:center; width:120px;">Tidak Hadir</th></tr></thead>
