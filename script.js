@@ -1,5 +1,5 @@
 // ==============================================================
-// ==== MESIN ANIMASI PREMIUM (LOADING -> SUCCESS/ERROR) ========
+// ==== MESIN ANIMASI PREMIUM (LOADING/SUCCESS/CONFIRM) =========
 // ==============================================================
 const PremiumAlert = {
     init() {
@@ -17,6 +17,11 @@ const PremiumAlert = {
                     </div>
                     <h3 id="p-title" style="margin-bottom:8px; font-size:20px; color:#0f172a; font-family:var(--font-heading); font-weight:800;"></h3>
                     <p id="p-text" style="font-size:14px; color:#64748b; margin:0; font-weight:500;"></p>
+                    
+                    <div id="p-actions" class="p-actions">
+                        <button id="p-btn-cancel" class="p-btn p-btn-cancel">Batal</button>
+                        <button id="p-btn-confirm" class="p-btn p-btn-confirm">Ya</button>
+                    </div>
                 </div>
             </div>
             <div id="premium-snackbar" class="premium-snackbar">
@@ -35,17 +40,57 @@ const PremiumAlert = {
         const container = document.getElementById('p-icon-container');
         document.getElementById('p-title').innerText = title || 'Memproses...';
         document.getElementById('p-text').innerText = text || 'Mohon tunggu sebentar';
+        document.getElementById('p-actions').classList.remove('show'); // Sembunyikan tombol
 
         container.className = 'p-icon-container is-loading';
         document.querySelectorAll('.p-svg').forEach(el => el.style.display = 'none');
         overlay.classList.add('show');
     },
+    confirm(title, text, confirmText = 'Ya', isOrangeColor = false) {
+        return new Promise((resolve) => {
+            this.init();
+            const overlay = document.getElementById('premium-overlay');
+            const container = document.getElementById('p-icon-container');
+            const actions = document.getElementById('p-actions');
+            const btnCancel = document.getElementById('p-btn-cancel');
+            const btnConfirm = document.getElementById('p-btn-confirm');
+
+            document.getElementById('p-title').innerText = title;
+            document.getElementById('p-text').innerText = text;
+
+            // Set ikon menjadi warning (tanda seru)
+            container.className = 'p-icon-container is-finished is-warning';
+            document.querySelectorAll('.p-svg').forEach(el => el.style.display = 'none');
+            document.getElementById('p-svg-warning').style.display = 'block';
+
+            // Atur gaya tombol confirm
+            btnConfirm.innerText = confirmText;
+            btnConfirm.className = isOrangeColor ? 'p-btn p-btn-confirm orange' : 'p-btn p-btn-confirm';
+
+            actions.classList.add('show');
+            overlay.classList.add('show');
+
+            const handleClose = (result) => {
+                btnCancel.onclick = null;
+                btnConfirm.onclick = null;
+                // Jika batal, tutup overlay. Jika Ya, biarkan terbuka karena akan ditimpa loading
+                if (!result) { 
+                    actions.classList.remove('show'); 
+                    overlay.classList.remove('show'); 
+                }
+                resolve(result);
+            };
+
+            btnCancel.onclick = () => handleClose(false);
+            btnConfirm.onclick = () => handleClose(true);
+        });
+    },
     finish(type, title, text, callback) {
         this.init();
         const overlay = document.getElementById('premium-overlay');
         const container = document.getElementById('p-icon-container');
+        document.getElementById('p-actions').classList.remove('show');
 
-        // Jika dipanggil tiba-tiba tanpa loading sebelumnya, munculkan sekejap
         if (!overlay.classList.contains('show')) {
             document.getElementById('p-title').innerText = title;
             document.getElementById('p-text').innerText = text;
@@ -63,23 +108,19 @@ const PremiumAlert = {
 
         document.getElementById('p-title').innerText = title;
         document.getElementById('p-text').innerText = text;
-
-        // 1. Tiga titik menyatu (Merging)
         container.className = 'p-icon-container is-merging';
 
         setTimeout(() => {
-            // 2. Berubah warna & Icon Draw Animation (Success/Error/Warning)
             container.className = `p-icon-container is-finished is-${type}`;
             document.querySelectorAll('.p-svg').forEach(el => el.style.display = 'none');
             document.getElementById(`p-svg-${type}`).style.display = 'block';
 
-            // 3. Menghilang dan munculkan Snackbar setelah 1.8 detik dipandangi
             setTimeout(() => {
                 overlay.classList.remove('show');
                 this.showSnackbar(type, title, text);
                 if (callback) callback();
             }, 1800);
-        }, 400); // Tunggu titik menyatu 400ms
+        }, 400); 
     },
     showSnackbar(type, title, text) {
         this.init();
@@ -97,7 +138,7 @@ const PremiumAlert = {
         document.getElementById('sb-desc').innerText = text;
 
         sb.classList.add('show');
-        setTimeout(() => { sb.classList.remove('show'); }, 4000); // Tampil di atas layar 4 detik
+        setTimeout(() => { sb.classList.remove('show'); }, 4000); 
     },
     close() {
         const overlay = document.getElementById('premium-overlay');
@@ -338,14 +379,13 @@ async function tambahAdminKelas() {
 }
 
 async function hapusAdminKelas(username) {
-    // Kita biarkan SWAL untuk popup konfirmasi HAPUS/PILIHAN agar tidak tumpang tindih
-    Swal.fire({ title: 'Hapus Admin?', text: `Admin ${username} akan dihapus.`, icon: 'warning', showCancelButton: true, confirmButtonColor: '#991b1b', confirmButtonText: 'Ya, Hapus' }).then(async (result) => {
-        if (result.isConfirmed) {
-            await firebase.database().ref('admin_perkelas/' + username).remove();
-            PremiumAlert.showSnackbar('success', 'Terhapus', `Akun ${username} telah dicabut.`);
-            renderDaftarAdminKelas();
-        }
-    });
+    const isConfirmed = await PremiumAlert.confirm('Cabut Akses?', `Admin ${username} akan dihapus dari sistem.`, 'Ya, Cabut');
+    if (isConfirmed) {
+        PremiumAlert.showLoading('Menghapus...', 'Mencabut akses admin');
+        await firebase.database().ref('admin_perkelas/' + username).remove();
+        PremiumAlert.finish('success', 'Berhasil', `Akses admin ${username} telah dicabut.`);
+        renderDaftarAdminKelas();
+    }
 }
 
 // ==== ADMIN UTAMA: TABEL ====
@@ -375,42 +415,43 @@ function renderTabelAdmin() {
 async function hapusDataIndividu(id) {
     const snap = await firebase.database().ref('absensi/' + id).once('value');
     const data = snap.val();
-    Swal.fire({ title: 'Hapus Rekaman?', text: "Data absensi ini akan dihapus permanen.", icon: 'warning', showCancelButton: true, confirmButtonColor: '#991b1b', confirmButtonText: 'Ya' }).then(async (result) => {
-        if (result.isConfirmed) {
-            if (data && data.status === 'Tidak Hadir') {
-                const safeNama = sanitizeKey(data.nama); 
-                let currentSiswa = dbRekapBulanan.siswa[data.kelas]?.[safeNama] || 0;
-                let currentKelas = dbRekapBulanan.kelas[data.kelas] || 0;
-                if(currentSiswa > 0) firebase.database().ref(`rekap_bulanan/siswa/${data.kelas}/${safeNama}`).set(currentSiswa - 1);
-                if(currentKelas > 0) firebase.database().ref(`rekap_bulanan/kelas/${data.kelas}`).set(currentKelas - 1);
-            }
-            if (data && data.filePath) await hapusFileDariSupabase(data.filePath);
-            await firebase.database().ref('absensi/' + id).remove();
-            PremiumAlert.showSnackbar('success', 'Terhapus', 'Data berhasil dihapus dari sistem.');
+    
+    const isConfirmed = await PremiumAlert.confirm('Hapus Absensi?', "Data absensi ini akan dihapus secara permanen.", "Ya, Hapus");
+    if (isConfirmed) {
+        PremiumAlert.showLoading('Menghapus...', 'Menghapus data dari Absensi');
+        if (data && data.status === 'Tidak Hadir') {
+            const safeNama = sanitizeKey(data.nama); 
+            let currentSiswa = dbRekapBulanan.siswa[data.kelas]?.[safeNama] || 0;
+            let currentKelas = dbRekapBulanan.kelas[data.kelas] || 0;
+            if(currentSiswa > 0) firebase.database().ref(`rekap_bulanan/siswa/${data.kelas}/${safeNama}`).set(currentSiswa - 1);
+            if(currentKelas > 0) firebase.database().ref(`rekap_bulanan/kelas/${data.kelas}`).set(currentKelas - 1);
         }
-    });
+        if (data && data.filePath) await hapusFileDariSupabase(data.filePath);
+        await firebase.database().ref('absensi/' + id).remove();
+        PremiumAlert.finish('success', 'Terhapus', 'Absen berhasil dihapus dari Absensi.');
+    }
 }
 
 async function resetSemuaData() {
-    Swal.fire({ title: 'Reset Harian?', text: "Menghapus seluruh absensi. Peringkat Bulanan tetap utuh.", icon: 'error', showCancelButton: true, confirmButtonColor: '#991b1b', confirmButtonText: 'Ya, Reset Harian!' }).then(async (result) => {
-        if (result.isConfirmed) {
-            const snap = await firebase.database().ref('absensi').once('value');
-            const allData = snap.val() || {};
-            const filePaths = Object.values(allData).map(d => d.filePath).filter(Boolean);
-            if (filePaths.length > 0) await supabaseClient.storage.from('foto-absensi').remove(filePaths);
-            await firebase.database().ref('absensi').remove();
-            PremiumAlert.finish('success', 'Berhasil Reset', 'Seluruh data absensi hari ini telah dikosongkan.');
-        }
-    });
+    const isConfirmed = await PremiumAlert.confirm('Reset Harian?', "Seluruh absen hari ini akan dihapus.", "Reset Harian");
+    if (isConfirmed) {
+        PremiumAlert.showLoading('Mereset Data...', 'Membersihkan data absensi hari ini');
+        const snap = await firebase.database().ref('absensi').once('value');
+        const allData = snap.val() || {};
+        const filePaths = Object.values(allData).map(d => d.filePath).filter(Boolean);
+        if (filePaths.length > 0) await supabaseClient.storage.from('foto-absensi').remove(filePaths);
+        await firebase.database().ref('absensi').remove();
+        PremiumAlert.finish('success', 'Direset', 'Seluruh data absensi telah dikosongkan.');
+    }
 }
 
 async function resetRekapBulanan() {
-    Swal.fire({ title: 'Reset Bulanan?', text: "Peringkat kelas dan siswa akan di-reset menjadi 0!", icon: 'warning', showCancelButton: true, confirmButtonColor: '#9a3412', confirmButtonText: 'Ya, Reset Bulan Ini!' }).then(async (result) => {
-        if (result.isConfirmed) {
-            await firebase.database().ref('rekap_bulanan').remove();
-            PremiumAlert.finish('success', 'Berhasil', 'Peringkat bulanan direset menjadi 0.');
-        }
-    });
+    const isConfirmed = await PremiumAlert.confirm('Reset Bulanan?', "Peringkat Kelas dan Siswa Terteladan akan dikembalikan menjadi 0.", "Reset Bulanan", true);
+    if (isConfirmed) {
+        PremiumAlert.showLoading('Mereset Peringkat...', 'Menghapus rekam bulanan');
+        await firebase.database().ref('rekap_bulanan').remove();
+        PremiumAlert.finish('success', 'Direset', 'Peringkat bulanan berhasil dikosongkan.');
+    }
 }
 
 function downloadExcel() {
@@ -529,15 +570,15 @@ function renderTabelKelas() {
 
 async function resetDataKelas() {
     const kelas = currentUser.kelas;
-    Swal.fire({ title: 'Yakin?', text: `Reset absensi kelas ${kelas}?`, icon: 'error', showCancelButton: true, confirmButtonColor: '#991b1b', confirmButtonText: 'Ya!' }).then(async (result) => {
-        if (result.isConfirmed) {
-            const dataKelas = dbAbsensi.filter(item => item.kelas === kelas);
-            const filePaths = dataKelas.map(d => d.filePath).filter(Boolean);
-            if (filePaths.length > 0) await supabaseClient.storage.from('foto-absensi').remove(filePaths);
-            for (const item of dataKelas) await firebase.database().ref('absensi/' + item.id).remove();
-            PremiumAlert.finish('success', 'Berhasil', `Data kelas ${kelas} telah dihapus.`);
-        }
-    });
+    const isConfirmed = await PremiumAlert.confirm('Reset Data Kelas?', `Yakin ingin mereset absensi kelas ${kelas}?`, "Ya, Reset");
+    if (isConfirmed) {
+        PremiumAlert.showLoading('Mereset Kelas...', `Menghapus data kelas ${kelas}`);
+        const dataKelas = dbAbsensi.filter(item => item.kelas === kelas);
+        const filePaths = dataKelas.map(d => d.filePath).filter(Boolean);
+        if (filePaths.length > 0) await supabaseClient.storage.from('foto-absensi').remove(filePaths);
+        for (const item of dataKelas) await firebase.database().ref('absensi/' + item.id).remove();
+        PremiumAlert.finish('success', 'Berhasil', `Data kelas ${kelas} telah dibersihkan.`);
+    }
 }
 
 function downloadExcelKelas() {
