@@ -194,7 +194,17 @@ button:active { transform: translateY(1px); }
     margin-bottom: 12px;
 }
 
-.btn-small { padding: 8px 16px; font-size: 12px; border-radius: 50px; margin: 0; box-shadow: none; font-weight: 700; }
+/* PERBAIKAN TOMBOL KECIL (HAPUS & LIHAT) AGAR UKURANNYA KONSISTEN */
+.btn-small { 
+    padding: 8px 20px; 
+    font-size: 13px; 
+    border-radius: 50px; 
+    margin: 0; 
+    box-shadow: none; 
+    font-weight: 700; 
+    width: max-content !important; /* Mencegah tombol merenggang ke samping */
+    display: inline-block;
+}
 .btn-small:hover { transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
 .btn-delete-small { background: #fee2e2; color: #b91c1c; }
 
@@ -226,6 +236,7 @@ button:active { transform: translateY(1px); }
 .name-item.terpilih { background: #f0f9ff; color: #0284c7; font-weight: 700; }
 .name-item.disabled { color: #94a3b8; pointer-events: none; }
 
+/* PERBAIKAN TABEL (MENGHILANGKAN KOTAK-KOTAK SAMPING & MENAMBAH PADDING) */
 .table-responsive {
     width: 100%;
     overflow-x: auto;
@@ -236,9 +247,35 @@ button:active { transform: translateY(1px); }
     margin-bottom: 15px;
     text-align: left;
 }
-table { width: 100%; border-collapse: collapse; min-width: 500px; }
-th { background: #f8fafc; padding: 16px; font-size: 12px; color: #64748b; text-transform: uppercase; font-weight: 700; border-bottom: 2px solid #f1f5f9;}
-td { padding: 16px; font-size: 14px; border-bottom: 1px solid #f1f5f9; color: #1e293b; font-weight: 500;}
+table { 
+    width: 100%; 
+    border-collapse: collapse; 
+    min-width: 600px; 
+}
+th { 
+    background: #f8fafc; 
+    padding: 16px 24px; /* Bantalan lebih lega */
+    font-size: 12px; 
+    color: #64748b; 
+    text-transform: uppercase; 
+    font-weight: 700; 
+    border-bottom: 2px solid #f1f5f9;
+    border-left: none !important; /* Menghapus kotak vertikal */
+    border-right: none !important; /* Menghapus kotak vertikal */
+}
+td { 
+    padding: 16px 24px; /* Bantalan lebih lega */
+    font-size: 14px; 
+    border-bottom: 1px solid #f1f5f9; 
+    color: #1e293b; 
+    font-weight: 500;
+    border-left: none !important; /* Menghapus kotak vertikal */
+    border-right: none !important; /* Menghapus kotak vertikal */
+    vertical-align: middle;
+}
+tr:last-child td {
+    border-bottom: none; /* Bersihkan garis di baris paling bawah */
+}
 
 .table-rank { max-width: 400px; margin: 0 auto; }
 .table-rank table { min-width: 100%; }
@@ -312,25 +349,25 @@ video, canvas { width: 100%; display: block; transform: scaleX(-1); }
 .modal-item:last-child { border-bottom: none; }
 .modal-item:hover { background: #f0f9ff; color: #0284c7; border-radius: 16px; }
 
-/* ========== ANIMASI LOADING MZ-LOADER (DIPERKECIL) ========== */
+/* ========== ANIMASI LOADING MZ-LOADER ========== */
 .mz-loader-container { 
     display: flex; 
     flex-direction: column; 
     align-items: center; 
     justify-content: center; 
-    padding: 15px 0; 
+    padding: 10px 0; 
 }
 .mz-loader { 
     display: flex; 
     align-items: flex-end; 
     justify-content: center; 
-    gap: 8px; /* Jarak antar bola dirapatkan */
-    height: 35px; /* Tinggi wadah dikurangi */
-    margin-bottom: 15px; 
+    gap: 8px; 
+    height: 35px; 
+    margin-bottom: 12px; 
 }
 .mz-loader span { 
-    height: 14px; /* Ukuran bola diperkecil */
-    width: 14px;  /* Ukuran bola diperkecil */
+    height: 12px; 
+    width: 12px;  
     background-color: #0ea5e9; 
     border-radius: 50%; 
     animation: mz-bounce 0.6s ease-in-out infinite alternate; 
@@ -340,11 +377,11 @@ video, canvas { width: 100%; display: block; transform: scaleX(-1); }
 .mz-loader span:nth-child(3) { animation-delay: 0.4s; }
 @keyframes mz-bounce { 
     0% { transform: translateY(0); } 
-    100% { transform: translateY(-16px); } /* Lompatan disesuaikan agar tidak terlalu tinggi */
+    100% { transform: translateY(-16px); } 
 }
 .mz-text { 
     font-family: var(--font-body); 
-    font-size: 15px; 
+    font-size: 14px; 
     font-weight: 700; 
     color: #1e293b; 
     text-align: center;
