@@ -1,19 +1,115 @@
-// ==== FUNGSI CUSTOM LOADING (3 BOLA LOMPAT) ====
-function showCustomLoading(title, text) {
-    Swal.fire({
-        title: title,
-        html: `
-            <div class="mz-loader-container">
-                <div class="mz-loader">
-                    <span></span><span></span><span></span>
+// ==============================================================
+// ==== MESIN ANIMASI PREMIUM (LOADING -> SUCCESS/ERROR) ========
+// ==============================================================
+const PremiumAlert = {
+    init() {
+        if (document.getElementById('premium-overlay')) return;
+        const html = `
+            <div id="premium-overlay" class="premium-overlay">
+                <div class="premium-card">
+                    <div id="p-icon-container" class="p-icon-container">
+                        <div class="p-dots"><div class="p-dot"></div><div class="p-dot"></div><div class="p-dot"></div></div>
+                        <div class="p-circle"></div>
+                        <svg id="p-svg-success" class="p-svg" viewBox="0 0 24 24" style="display:none;"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                        <svg id="p-svg-error" class="p-svg" viewBox="0 0 24 24" style="display:none;"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                        <svg id="p-svg-warning" class="p-svg" viewBox="0 0 24 24" style="display:none;"><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                        <div class="p-ripple"></div>
+                    </div>
+                    <h3 id="p-title" style="margin-bottom:8px; font-size:20px; color:#0f172a; font-family:var(--font-heading); font-weight:800;"></h3>
+                    <p id="p-text" style="font-size:14px; color:#64748b; margin:0; font-weight:500;"></p>
                 </div>
-                <div class="mz-text">${text}</div>
             </div>
-        `,
-        allowOutsideClick: false,
-        showConfirmButton: false
-    });
+            <div id="premium-snackbar" class="premium-snackbar">
+                <div id="sb-icon" class="sb-icon-wrapper"></div>
+                <div class="sb-text-container">
+                    <div id="sb-title" class="sb-title"></div>
+                    <div id="sb-desc" class="sb-desc"></div>
+                </div>
+            </div>
+        `;
+        document.body.insertAdjacentHTML('beforeend', html);
+    },
+    showLoading(title, text) {
+        this.init();
+        const overlay = document.getElementById('premium-overlay');
+        const container = document.getElementById('p-icon-container');
+        document.getElementById('p-title').innerText = title || 'Memproses...';
+        document.getElementById('p-text').innerText = text || 'Mohon tunggu sebentar';
+
+        container.className = 'p-icon-container is-loading';
+        document.querySelectorAll('.p-svg').forEach(el => el.style.display = 'none');
+        overlay.classList.add('show');
+    },
+    finish(type, title, text, callback) {
+        this.init();
+        const overlay = document.getElementById('premium-overlay');
+        const container = document.getElementById('p-icon-container');
+
+        // Jika dipanggil tiba-tiba tanpa loading sebelumnya, munculkan sekejap
+        if (!overlay.classList.contains('show')) {
+            document.getElementById('p-title').innerText = title;
+            document.getElementById('p-text').innerText = text;
+            container.className = 'p-icon-container is-loading';
+            document.querySelectorAll('.p-svg').forEach(el => el.style.display = 'none');
+            overlay.classList.add('show');
+            setTimeout(() => this.executeFinish(type, title, text, callback), 150);
+        } else {
+            this.executeFinish(type, title, text, callback);
+        }
+    },
+    executeFinish(type, title, text, callback) {
+        const container = document.getElementById('p-icon-container');
+        const overlay = document.getElementById('premium-overlay');
+
+        document.getElementById('p-title').innerText = title;
+        document.getElementById('p-text').innerText = text;
+
+        // 1. Tiga titik menyatu (Merging)
+        container.className = 'p-icon-container is-merging';
+
+        setTimeout(() => {
+            // 2. Berubah warna & Icon Draw Animation (Success/Error/Warning)
+            container.className = `p-icon-container is-finished is-${type}`;
+            document.querySelectorAll('.p-svg').forEach(el => el.style.display = 'none');
+            document.getElementById(`p-svg-${type}`).style.display = 'block';
+
+            // 3. Menghilang dan munculkan Snackbar setelah 1.8 detik dipandangi
+            setTimeout(() => {
+                overlay.classList.remove('show');
+                this.showSnackbar(type, title, text);
+                if (callback) callback();
+            }, 1800);
+        }, 400); // Tunggu titik menyatu 400ms
+    },
+    showSnackbar(type, title, text) {
+        this.init();
+        const sb = document.getElementById('premium-snackbar');
+        const sbIcon = document.getElementById('sb-icon');
+        sbIcon.className = `sb-icon-wrapper sb-${type}`;
+        
+        let iconSvg = '';
+        if(type === 'success') iconSvg = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+        if(type === 'error') iconSvg = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`;
+        if(type === 'warning') iconSvg = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>`;
+        
+        sbIcon.innerHTML = iconSvg;
+        document.getElementById('sb-title').innerText = title;
+        document.getElementById('sb-desc').innerText = text;
+
+        sb.classList.add('show');
+        setTimeout(() => { sb.classList.remove('show'); }, 4000); // Tampil di atas layar 4 detik
+    },
+    close() {
+        const overlay = document.getElementById('premium-overlay');
+        if(overlay) overlay.classList.remove('show');
+    }
+};
+
+// ==== FUNGSI PENGGANTI YANG LAMA ====
+function showCustomLoading(title, text) {
+    PremiumAlert.showLoading(title, text);
 }
+
 
 // ==== FUNGSI TOGGLE PASSWORD MATA ====
 function togglePassword(inputId, iconDiv) {
@@ -71,7 +167,6 @@ let currentUser = null;
 const iconCheckSVG = `<svg class="anim-check" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
 const iconCrossSVG = `<svg class="anim-cross" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`;
 
-// Helper Render Status Badge
 function getStatusBadge(status) {
     if (status === 'Hadir') return `<span class="badge-status badge-hadir">${iconCheckSVG} Hadir</span>`;
     if (status === 'Tidak Hadir') return `<span class="badge-status badge-alpha">${iconCrossSVG} Tidak Hadir</span>`;
@@ -99,7 +194,7 @@ function initFirebaseListeners() {
         if (status === 'ditutup' && absenPanel.classList.contains('active')) {
             switchPanel('panel-awal');
             matikanKamera();
-            Swal.fire({ title: 'Absensi Ditutup', text: 'Siswa tidak bisa absen.', icon: 'warning', timer: 3000, showConfirmButton: false });
+            PremiumAlert.finish('warning', 'Sesi Ditutup', 'Absensi saat ini ditutup oleh pengelola.');
         }
     });
 }
@@ -125,7 +220,7 @@ function verifikasiLokasi() {
             (position) => {
                 const jarak = hitungJarak(position.coords.latitude, position.coords.longitude, KANTOR_LAT, KANTOR_LON);
                 if (jarak <= BATAS_JARAK_METER) resolve(jarak);
-                else reject(`Anda berada di luar area absen! Jarak Anda ${Math.round(jarak)} meter dari sekolah.`);
+                else reject(`Anda berada di luar area absen! Jarak Anda ${Math.round(jarak)} meter.`);
             },
             (error) => reject("Gagal mendapatkan lokasi. Pastikan GPS menyala."),
             { enableHighAccuracy: true, timeout: 10000 } 
@@ -151,15 +246,16 @@ function refreshActiveUI() {
 async function loginUmum() {
     const user = document.getElementById('admin-user').value.trim();
     const pass = document.getElementById('admin-pass').value.trim();
-    if (!user || !pass) return Swal.fire({ title: 'Gagal', text: 'Isi username dan password.', icon: 'warning', timer: 2000, showConfirmButton: false });
+    if (!user || !pass) return PremiumAlert.finish('warning', 'Gagal', 'Silakan isi username dan password.');
 
-    showCustomLoading('Memeriksa...', 'Sedang masuk ke sistem');
+    PremiumAlert.showLoading('Memeriksa...', 'Sedang masuk ke sistem');
 
     const adminSnap = await firebase.database().ref('admin/' + user).once('value');
     if (adminSnap.exists() && adminSnap.val().password === pass) {
-        Swal.close();
         currentUser = { role: 'admin', username: user }; 
         document.getElementById('admin-user').value = ''; document.getElementById('admin-pass').value = '';
+        PremiumAlert.close();
+        PremiumAlert.showSnackbar('success', 'Akses Diterima', `Selamat datang kembali, ${user}.`);
         switchPanel('panel-dashboard-admin', true);
         renderTabelAdmin(); updateTeksTombolBukaTutup();
         return;
@@ -167,17 +263,18 @@ async function loginUmum() {
 
     const adminKelasSnap = await firebase.database().ref('admin_perkelas/' + user).once('value');
     if (adminKelasSnap.exists() && adminKelasSnap.val().password === pass) {
-        Swal.close();
         const data = adminKelasSnap.val();
         currentUser = { role: 'admin_kelas', username: user, kelas: data.kelas };
         document.getElementById('admin-user').value = ''; document.getElementById('admin-pass').value = '';
+        PremiumAlert.close();
+        PremiumAlert.showSnackbar('success', 'Akses Diterima', `Selamat datang Admin Kelas ${data.kelas}.`);
         switchPanel('panel-dashboard-kelas', true);
         document.getElementById('admin-kelas-display').innerText = `Admin Kelas ${data.kelas}`;
         renderTabelKelas();
         return;
     }
 
-    Swal.fire({ title: 'Login Gagal', text: 'Username atau password salah.', icon: 'error', timer: 2000, showConfirmButton: false });
+    PremiumAlert.finish('error', 'Akses Ditolak', 'Username atau password salah.');
 }
 
 function logoutUmum() {
@@ -228,23 +325,24 @@ async function tambahAdminKelas() {
     const username = document.getElementById('admin-baru-user').value.trim();
     const password = document.getElementById('admin-baru-pass').value.trim();
     const kelas = document.getElementById('admin-baru-kelas').value;
-    if (!username || !password || !kelas) return Swal.fire({ title: 'Gagal', text: 'Isi semua data.', icon: 'warning', timer: 2000, showConfirmButton: false });
+    if (!username || !password || !kelas) return PremiumAlert.finish('warning', 'Gagal', 'Pastikan semua kolom terisi.');
     
     const adminSnap = await firebase.database().ref('admin/' + username).once('value');
     const adminKelasSnap = await firebase.database().ref('admin_perkelas/' + username).once('value');
-    if (adminSnap.exists() || adminKelasSnap.exists()) return Swal.fire({ title: 'Gagal', text: 'Username sudah digunakan.', icon: 'error', timer: 2000, showConfirmButton: false });
+    if (adminSnap.exists() || adminKelasSnap.exists()) return PremiumAlert.finish('error', 'Gagal', 'Username sudah terpakai.');
     
     await firebase.database().ref('admin_perkelas/' + username).set({ password, kelas });
-    Swal.fire({ title: 'Sukses', text: 'Admin kelas berhasil ditambahkan.', icon: 'success', timer: 2000, showConfirmButton: false });
+    PremiumAlert.finish('success', 'Berhasil', `Admin untuk ${kelas} ditambahkan.`);
     document.getElementById('admin-baru-user').value = ''; document.getElementById('admin-baru-pass').value = ''; document.getElementById('admin-baru-kelas').value = '';
     renderDaftarAdminKelas();
 }
 
 async function hapusAdminKelas(username) {
-    Swal.fire({ title: 'Hapus Admin?', text: `Admin ${username} akan dihapus.`, icon: 'warning', showCancelButton: true, confirmButtonColor: '#991b1b', confirmButtonText: 'Ya' }).then(async (result) => {
+    // Kita biarkan SWAL untuk popup konfirmasi HAPUS/PILIHAN agar tidak tumpang tindih
+    Swal.fire({ title: 'Hapus Admin?', text: `Admin ${username} akan dihapus.`, icon: 'warning', showCancelButton: true, confirmButtonColor: '#991b1b', confirmButtonText: 'Ya, Hapus' }).then(async (result) => {
         if (result.isConfirmed) {
             await firebase.database().ref('admin_perkelas/' + username).remove();
-            Swal.fire({ title: 'Terhapus', text: 'Admin dihapus.', icon: 'success', timer: 2000, showConfirmButton: false });
+            PremiumAlert.showSnackbar('success', 'Terhapus', `Akun ${username} telah dicabut.`);
             renderDaftarAdminKelas();
         }
     });
@@ -277,7 +375,7 @@ function renderTabelAdmin() {
 async function hapusDataIndividu(id) {
     const snap = await firebase.database().ref('absensi/' + id).once('value');
     const data = snap.val();
-    Swal.fire({ title: 'Hapus?', text: "Data absensi ini akan dihapus.", icon: 'warning', showCancelButton: true, confirmButtonColor: '#991b1b', confirmButtonText: 'Ya' }).then(async (result) => {
+    Swal.fire({ title: 'Hapus Rekaman?', text: "Data absensi ini akan dihapus permanen.", icon: 'warning', showCancelButton: true, confirmButtonColor: '#991b1b', confirmButtonText: 'Ya' }).then(async (result) => {
         if (result.isConfirmed) {
             if (data && data.status === 'Tidak Hadir') {
                 const safeNama = sanitizeKey(data.nama); 
@@ -288,7 +386,7 @@ async function hapusDataIndividu(id) {
             }
             if (data && data.filePath) await hapusFileDariSupabase(data.filePath);
             await firebase.database().ref('absensi/' + id).remove();
-            Swal.fire({ title: 'Terhapus!', text: 'Data berhasil dihapus.', icon: 'success' });
+            PremiumAlert.showSnackbar('success', 'Terhapus', 'Data berhasil dihapus dari sistem.');
         }
     });
 }
@@ -301,7 +399,7 @@ async function resetSemuaData() {
             const filePaths = Object.values(allData).map(d => d.filePath).filter(Boolean);
             if (filePaths.length > 0) await supabaseClient.storage.from('foto-absensi').remove(filePaths);
             await firebase.database().ref('absensi').remove();
-            Swal.fire({ title: 'Direset!', text: 'Data harian dihapus.', icon: 'success' });
+            PremiumAlert.finish('success', 'Berhasil Reset', 'Seluruh data absensi hari ini telah dikosongkan.');
         }
     });
 }
@@ -310,13 +408,13 @@ async function resetRekapBulanan() {
     Swal.fire({ title: 'Reset Bulanan?', text: "Peringkat kelas dan siswa akan di-reset menjadi 0!", icon: 'warning', showCancelButton: true, confirmButtonColor: '#9a3412', confirmButtonText: 'Ya, Reset Bulan Ini!' }).then(async (result) => {
         if (result.isConfirmed) {
             await firebase.database().ref('rekap_bulanan').remove();
-            Swal.fire({ title: 'Direset!', text: 'Peringkat bulanan berhasil dikosongkan.', icon: 'success' });
+            PremiumAlert.finish('success', 'Berhasil', 'Peringkat bulanan direset menjadi 0.');
         }
     });
 }
 
 function downloadExcel() {
-    if (dbAbsensi.length === 0) return Swal.fire({ title: 'Kosong', text: 'Belum ada data.', icon: 'info', timer: 2500, showConfirmButton: false });
+    if (dbAbsensi.length === 0) return PremiumAlert.finish('warning', 'Kosong', 'Belum ada data untuk diunduh.');
     const dataToExport = dbAbsensi.map(item => ({ "Nama Siswa": item.nama, "Kelas": item.kelas, "Hari": item.hari, "Status": item.status, "Alasan": item.keterangan || "Bukti", "Tanggal & Jam": item.waktuStr }));
     const worksheet = XLSX.utils.json_to_sheet(dataToExport);
     const workbook = XLSX.utils.book_new();
@@ -332,7 +430,7 @@ async function toggleStatusAbsensi() {
     
     if (isClosed) {
         await ref.set('dibuka');
-        Swal.fire({ title: 'Absensi Dibuka', text: 'Siswa dapat melakukan absen kembali.', icon: 'success', timer: 3000, showConfirmButton: false });
+        PremiumAlert.showSnackbar('success', 'Akses Dibuka', 'Siswa dapat melakukan absen kembali.');
     } else {
         openModal('modal-tutup-absen-hari');
     }
@@ -341,7 +439,7 @@ async function toggleStatusAbsensi() {
 
 async function prosesTutupAbsensi(hariDitutup) {
     closeModal('modal-tutup-absen-hari');
-    showCustomLoading('Memproses...', 'Merekap siswa Tidak Hadir ke Peringkat Bulanan...');
+    PremiumAlert.showLoading('Memproses Rekap...', 'Siswa yang belum absen akan dijadikan Tidak Hadir');
     
     try {
         let updates = {};
@@ -378,11 +476,11 @@ async function prosesTutupAbsensi(hariDitutup) {
         await firebase.database().ref('settings/status_absen').set('ditutup');
         
         updateTeksTombolBukaTutup();
-        Swal.fire({ title: 'Absensi Ditutup', text: `Siswa yang belum absen hari ${hariDitutup} otomatis Tidak Hadir.`, icon: 'success', timer: 4500, showConfirmButton: false });
+        PremiumAlert.finish('success', 'Sesi Ditutup', `Rekap hari ${hariDitutup} berhasil diproses.`);
 
     } catch (error) {
         console.error("Error Tutup Absen:", error);
-        Swal.fire({ title: 'Kesalahan', text: 'Gagal merekap absensi.', icon: 'error' });
+        PremiumAlert.finish('error', 'Gagal', 'Terjadi kesalahan sistem.');
     }
 }
 
@@ -400,7 +498,7 @@ async function updateTeksTombolBukaTutup() {
 async function cekDanBukaAbsen() {
     const snapshot = await firebase.database().ref('settings/status_absen').once('value');
     const isClosed = snapshot.val() === 'ditutup';
-    if (isClosed) Swal.fire({ title: 'Absensi Ditutup', text: 'Sesi absen saat ini sudah tidak tersedia.', icon: 'error', timer: 3000, showConfirmButton: false });
+    if (isClosed) PremiumAlert.finish('warning', 'Sesi Ditutup', 'Tidak bisa absen saat ini.');
     else switchPanel('panel-absen');
 }
 
@@ -437,7 +535,7 @@ async function resetDataKelas() {
             const filePaths = dataKelas.map(d => d.filePath).filter(Boolean);
             if (filePaths.length > 0) await supabaseClient.storage.from('foto-absensi').remove(filePaths);
             for (const item of dataKelas) await firebase.database().ref('absensi/' + item.id).remove();
-            Swal.fire({ title: 'Direset!', text: `Absensi dihapus.`, icon: 'success' });
+            PremiumAlert.finish('success', 'Berhasil', `Data kelas ${kelas} telah dihapus.`);
         }
     });
 }
@@ -445,7 +543,7 @@ async function resetDataKelas() {
 function downloadExcelKelas() {
     const kelas = currentUser.kelas;
     const dataKelas = dbAbsensi.filter(item => item.kelas === kelas);
-    if (dataKelas.length === 0) return Swal.fire({ title: 'Kosong', text: 'Tidak ada data.', icon: 'info', timer: 2500, showConfirmButton: false });
+    if (dataKelas.length === 0) return PremiumAlert.finish('warning', 'Kosong', 'Tidak ada data di kelas ini.');
     const dataToExport = dataKelas.map(item => ({ "Nama Siswa": item.nama, "Hari": item.hari, "Status": item.status, "Alasan": item.keterangan || "Bukti", "Tanggal & Jam": item.waktuStr }));
     const worksheet = XLSX.utils.json_to_sheet(dataToExport);
     const workbook = XLSX.utils.book_new();
@@ -703,7 +801,7 @@ async function mulaiKamera() {
         document.getElementById('video-kamera').srcObject = streamKamera; document.getElementById('video-kamera').classList.remove('hidden');
         document.getElementById('canvas-kamera').classList.add('hidden'); document.getElementById('btn-capture').classList.remove('hidden'); document.getElementById('btn-retake').classList.add('hidden');
     } catch (err) {
-        Swal.fire({ title: 'Akses Ditolak', text: 'Izinkan browser menggunakan kamera.', icon: 'error', timer: 3000, showConfirmButton: false });
+        PremiumAlert.finish('error', 'Akses Kamera Ditolak', 'Harap izinkan browser menggunakan kamera.');
     }
 }
 function matikanKamera() { if (streamKamera) streamKamera.getTracks().forEach(track => track.stop()); }
@@ -732,15 +830,19 @@ async function kirimAbsen() {
     const kelas = document.getElementById('kelas').value; const hari = document.getElementById('hari').value; const nama = document.getElementById('nama-terpilih').value;
     const status = 'Hadir'; const keterangan = "-";
 
-    if (!kelas || !hari || !nama) return Swal.fire({ title: 'Gagal', text: 'Isi semua data.', icon: 'warning', timer: 2500, showConfirmButton: false });
+    if (!kelas || !hari || !nama) return PremiumAlert.finish('warning', 'Gagal Mengirim', 'Pastikan Kelas, Hari, dan Nama sudah dipilih.');
 
-    showCustomLoading('Mengecek Lokasi...', 'Memastikan Anda berada di area sekolah');
-    try { const jarak = await verifikasiLokasi(); Swal.close(); } catch (pesanError) { return Swal.fire({ title: 'Gagal Absen', text: pesanError, icon: 'error' }); }
+    PremiumAlert.showLoading('Verifikasi GPS...', 'Memastikan Anda berada di area SMANSALA');
+    try { 
+        const jarak = await verifikasiLokasi(); 
+    } catch (pesanError) { 
+        return PremiumAlert.finish('error', 'Gagal Lokasi', pesanError); 
+    }
 
     let fotoSimpan = document.getElementById('foto-data').value;
-    if (!fotoSimpan) return Swal.fire({ title: 'Bukti Diperlukan', text: 'Ambil foto terlebih dahulu.', icon: 'warning', timer: 2500, showConfirmButton: false });
+    if (!fotoSimpan) return PremiumAlert.finish('warning', 'Bukti Diperlukan', 'Ambil foto *selfie* terlebih dahulu.');
 
-    showCustomLoading('Mengirim Data...', 'Mohon tunggu sebentar');
+    PremiumAlert.showLoading('Mengirim Data...', 'Mohon tunggu beberapa detik');
 
     const timeNow = new Date(); const uniqueId = "ID_" + timeNow.getTime() + "_" + Math.random().toString(36).substr(2, 5); const waktuStr = timeNow.toLocaleString('id-ID');
     let publicUrl = ''; let fileName = '';
@@ -748,14 +850,14 @@ async function kirimAbsen() {
     if (fotoSimpan) {
         const blob = dataURLtoBlob(fotoSimpan); const fileExt = 'jpg'; fileName = `absensi_${uniqueId}.${fileExt}`;
         const { error: uploadError } = await supabaseClient.storage.from('foto-absensi').upload(fileName, blob, { contentType: 'image/jpeg', upsert: true });
-        if (uploadError) return Swal.fire({ title: 'Gagal', text: 'Gagal unggah bukti.', icon: 'error', timer: 2500, showConfirmButton: false });
+        if (uploadError) return PremiumAlert.finish('error', 'Koneksi Lemah', 'Gagal mengunggah foto bukti ke server.');
         const { data: publicUrlData } = supabaseClient.storage.from('foto-absensi').getPublicUrl(fileName); publicUrl = publicUrlData.publicUrl;
     }
 
     const payload = { kelas: kelas, hari: hari, nama: nama, status: status, keterangan: keterangan, foto: publicUrl, filePath: fileName, waktuStr: waktuStr, lockKey: `absen_${kelas}_${nama}_${hari}` };
     await firebase.database().ref('absensi/' + uniqueId).set(payload);
 
-    Swal.fire({ title: 'Berhasil!', text: `${nama} telah absen.`, icon: 'success', timer: 2500, showConfirmButton: false }).then(() => {
+    PremiumAlert.finish('success', 'Absen Berhasil', `${nama} telah tercatat hadir.`, () => {
         document.getElementById('nama-terpilih').value = ""; document.getElementById('search-nama').value = ""; document.getElementById('foto-data').value = "";
         retakePhoto(); matikanKamera(); switchPanel('panel-awal');
     });
@@ -798,14 +900,14 @@ renderNama();
 
 async function daftarkanSidikJari() {
     if (!window.PublicKeyCredential) {
-        return Swal.fire('Tidak Didukung', 'Browser atau HP Anda tidak mendukung fitur sidik jari.', 'error');
+        return PremiumAlert.finish('error', 'Tidak Didukung', 'Browser atau HP Anda tidak mendukung sidik jari.');
     }
 
     let username = "";
     if (currentUser && currentUser.username) {
         username = currentUser.username;
     } else {
-        return Swal.fire('Sidik Jari Tidak Valid', 'Sistem gagal mendeteksi akun Anda. Silakan Logout dan Login ulang menggunakan password.', 'warning');
+        return PremiumAlert.finish('warning', 'Sesi Berakhir', 'Silakan Login manual dengan password terlebih dahulu.');
     }
 
     const challenge = new Uint8Array(32); window.crypto.getRandomValues(challenge);
@@ -814,11 +916,7 @@ async function daftarkanSidikJari() {
     const publicKey = {
         challenge: challenge,
         rp: { name: "Absensi SMANSALA", id: window.location.hostname },
-        user: {
-            id: userId,
-            name: username,
-            displayName: "Pengelola " + username
-        },
+        user: { id: userId, name: username, displayName: "Pengelola " + username },
         pubKeyCredParams: [{ type: "public-key", alg: -7 }, { type: "public-key", alg: -257 }],
         authenticatorSelection: { authenticatorAttachment: "platform" },
         timeout: 60000
@@ -830,23 +928,22 @@ async function daftarkanSidikJari() {
         localStorage.setItem('biometric_username', username);
         localStorage.setItem('biometric_credential_id', btoa(String.fromCharCode(...new Uint8Array(credential.rawId))));
         
-        Swal.fire({ title: 'Berhasil!', text: `Sidik jari untuk akun [${username}] berhasil ditambahkan!`, icon: 'success' });
+        PremiumAlert.finish('success', 'Berhasil Didaftarkan', `Sidik jari untuk akun ${username} berhasil diamankan.`);
     } catch (err) {
-        console.error(err);
-        Swal.fire('Gagal', 'Harap atur ulang!.', 'error');
+        PremiumAlert.finish('error', 'Dibatalkan', 'Pendaftaran biometrik gagal atau dibatalkan.');
     }
 }
 
 async function loginDenganSidikJari() {
     if (!window.PublicKeyCredential) {
-        return Swal.fire('Tidak Didukung', 'Browser atau HP Anda tidak mendukung fitur sidik jari.', 'error');
+        return PremiumAlert.finish('error', 'Tidak Didukung', 'HP ini tidak mendukung login biometrik.');
     }
 
     const savedUser = localStorage.getItem('biometric_username');
     const savedCredIdStr = localStorage.getItem('biometric_credential_id');
 
     if (!savedUser || !savedCredIdStr) {
-        return Swal.fire('Belum Terdaftar', 'Silakan login manual dengan password terlebih dahulu.', 'warning');
+        return PremiumAlert.finish('warning', 'Belum Terdaftar', 'Anda belum mengatur sidik jari di perangkat ini.');
     }
 
     const challenge = new Uint8Array(32); window.crypto.getRandomValues(challenge);
@@ -863,12 +960,13 @@ async function loginDenganSidikJari() {
     try {
         await navigator.credentials.get({ publicKey });
         
-        showCustomLoading('Memverifikasi...', 'Masuk dengan Sidik Jari');
+        PremiumAlert.showLoading('Memverifikasi...', 'Mencocokkan sidik jari dengan sistem');
 
         const adminSnap = await firebase.database().ref('admin/' + savedUser).once('value');
         if (adminSnap.exists()) {
-            Swal.close();
             currentUser = { role: 'admin', username: savedUser };
+            PremiumAlert.close();
+            PremiumAlert.showSnackbar('success', 'Akses Diterima', `Selamat datang kembali, ${savedUser}.`);
             switchPanel('panel-dashboard-admin', true);
             renderTabelAdmin(); updateTeksTombolBukaTutup();
             return;
@@ -876,19 +974,19 @@ async function loginDenganSidikJari() {
 
         const adminKelasSnap = await firebase.database().ref('admin_perkelas/' + savedUser).once('value');
         if (adminKelasSnap.exists()) {
-            Swal.close();
             const data = adminKelasSnap.val();
             currentUser = { role: 'admin_kelas', username: savedUser, kelas: data.kelas };
+            PremiumAlert.close();
+            PremiumAlert.showSnackbar('success', 'Akses Diterima', `Selamat datang Admin Kelas ${data.kelas}.`);
             switchPanel('panel-dashboard-kelas', true);
             document.getElementById('admin-kelas-display').innerText = `Admin Kelas ${data.kelas}`;
             renderTabelKelas();
             return;
         }
 
-        Swal.fire('Error', `Akun [${savedUser}] tidak ditemukan`, 'error');
+        PremiumAlert.finish('error', 'Gagal', 'Akun pengelola tidak ditemukan di database.');
 
     } catch (err) {
-        console.error(err);
-        Swal.fire('Batal', 'Verifikasi sidik jari tidak berhasil.', 'error');
+        PremiumAlert.finish('error', 'Batal', 'Verifikasi sidik jari dibatalkan.');
     }
 }
