@@ -772,6 +772,109 @@ async function hapusFileDariSupabase(filePath) {
     try { const { error } = await supabaseClient.storage.from('foto-absensi').remove([filePath]); if (error) console.warn('Gagal hapus file:', error); } catch (err) { console.warn('Error hapus file:', err); }
 }
 
+// ==========================================
+// ==== FITUR LOGIN SIDIK JARI (WEBAUTHN) ====
+// ==========================================
+
+async function daftarkanSidikJari() {
+    if (!window.PublicKeyCredential) {
+        return Swal.fire('Tidak Didukung', 'Browser atau HP Anda tidak mendukung fitur sidik jari.', 'error');
+    }
+
+    // Mengambil username admin yang sedang login
+    const username = currentUser.username || document.getElementById('admin-user').value || 'AdminUtama';
+
+    // Membuat identifier acak untuk perangkat ini
+    const challenge = new Uint8Array(32); window.crypto.getRandomValues(challenge);
+    const userId = new Uint8Array(16); window.crypto.getRandomValues(userId);
+
+    const publicKey = {
+        challenge: challenge,
+        rp: { name: "Absensi SMANSALA", id: window.location.hostname },
+        user: {
+            id: userId,
+            name: username,
+            displayName: "Pengelola " + username
+        },
+        pubKeyCredParams: [{ type: "public-key", alg: -7 }, { type: "public-key", alg: -257 }],
+        authenticatorSelection: { authenticatorAttachment: "platform" }, // Memaksa pakai sidik jari/FaceID bawaan HP
+        timeout: 60000
+    };
+
+    try {
+        const credential = await navigator.credentials.create({ publicKey });
+        
+        // Simpan data bahwa perangkat ini sudah didaftarkan untuk username tersebut
+        localStorage.setItem('biometric_username', username);
+        localStorage.setItem('biometric_credential_id', btoa(String.fromCharCode(...new Uint8Array(credential.rawId))));
+        
+        Swal.fire({ title: 'Berhasil!', text: 'Sidik jari perangkat ini berhasil didaftarkan. Anda bisa menggunakannya saat login nanti.', icon: 'success' });
+    } catch (err) {
+        console.error(err);
+        Swal.fire('Gagal', 'Pendaftaran sidik jari dibatalkan atau gagal.', 'error');
+    }
+}
+
+async function loginDenganSidikJari() {
+    if (!window.PublicKeyCredential) {
+        return Swal.fire('Tidak Didukung', 'Browser atau HP Anda tidak mendukung fitur sidik jari.', 'error');
+    }
+
+    const savedUser = localStorage.getItem('biometric_username');
+    const savedCredIdStr = localStorage.getItem('biometric_credential_id');
+
+    if (!savedUser || !savedCredIdStr) {
+        return Swal.fire('Belum Terdaftar', 'Anda belum mendaftarkan sidik jari di HP ini. Silakan login manual dengan password, lalu klik tombol "Daftarkan Sidik Jari" di dalam dashboard.', 'warning');
+    }
+
+    const challenge = new Uint8Array(32); window.crypto.getRandomValues(challenge);
+    const credId = Uint8Array.from(atob(savedCredIdStr), c => c.charCodeAt(0));
+
+    const publicKey = {
+        challenge: challenge,
+        rpId: window.location.hostname,
+        allowCredentials: [{ type: "public-key", id: credId }],
+        userVerification: "required",
+        timeout: 60000
+    };
+
+    try {
+        // Memunculkan pop-up sidik jari bawaan HP
+        await navigator.credentials.get({ publicKey });
+        
+        // Jika berhasil scan sidik jari, langsung proses login memotong jalur password
+        showCustomLoading('Memverifikasi...', 'Masuk dengan Sidik Jari');
+
+        // Cek data user tersebut apakah Admin Utama atau Admin Kelas di Firebase
+        const adminSnap = await firebase.database().ref('admin/' + savedUser).once('value');
+        if (adminSnap.exists()) {
+            Swal.close();
+            currentUser = { role: 'admin', username: savedUser };
+            switchPanel('panel-dashboard-admin', true);
+            renderTabelAdmin(); updateTeksTombolBukaTutup();
+            return;
+        }
+
+        const adminKelasSnap = await firebase.database().ref('admin_perkelas/' + savedUser).once('value');
+        if (adminKelasSnap.exists()) {
+            Swal.close();
+            const data = adminKelasSnap.val();
+            currentUser = { role: 'admin_kelas', username: savedUser, kelas: data.kelas };
+            switchPanel('panel-dashboard-kelas', true);
+            document.getElementById('admin-kelas-display').innerText = `Admin Kelas ${data.kelas}`;
+            renderTabelKelas();
+            return;
+        }
+
+        Swal.fire('Error', 'Akun pengelola tidak ditemukan di sistem.', 'error');
+
+    } catch (err) {
+        console.error(err);
+        Swal.fire('Login Gagal', 'Verifikasi sidik jari tidak valid atau dibatalkan.', 'error');
+    }
+}
+
+
 // ==== NAVIGASI PANEL ====
 function switchPanel(panelId, isAdminPanel = false) {
     const currentActive = document.querySelector('.panel.active'); const mainContainer = document.getElementById('main-container');
