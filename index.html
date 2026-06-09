@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Absensi Digital</title>
+    <title>Absensi Digital Smansala</title>
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -21,7 +21,7 @@
         
         <div id="panel-awal" class="panel active">
             <img src="https://raw.githubusercontent.com/endief/absensidigitalsman1lemahabang/250eb3dfec1bcefa494e569e92f74699f4fba057/SMANSALA.png" alt="Logo" class="logo-sekolah" onerror="this.style.display='none'">
-            <h1 class="portal-title">ABSENSI DIGITAL KELAS XI</h1>
+            <h1 class="portal-title">ABSENSI DIGITAL SISWA/SISWI</h1>
             <div class="instansi-sub">SMAN 1 LEMAHABANG<br><span style="font-size: 11px; color:#94a3b8;">KABUPATEN CIREBON</span></div>
             
             <button class="btn-primary" onclick="cekDanBukaAbsen()">ABSENSI</button>
@@ -30,7 +30,7 @@
 
         <div id="panel-pengelola" class="panel">
             <img src="https://raw.githubusercontent.com/endief/absensidigitalsman1lemahabang/250eb3dfec1bcefa494e569e92f74699f4fba057/SMANSALA.png" alt="Logo" class="logo-sekolah" onerror="this.style.display='none'">
-            <h2 class="panel-title" style="margin-bottom: 5px;">Akses Masuk Pengelola</h2>
+            <h2 class="panel-title" style="margin-bottom: 5px;">Akses Masuk</h2>
             <p style="text-align: center; color: #64748b; font-size: 14px; margin-bottom: 30px;">Masukkan Username dan Password</p>
             
             <div class="form-group">
@@ -52,7 +52,7 @@
             <button class="btn-fingerprint" onclick="loginDenganSidikJari()">
                 <div class="liquid-container"><div class="liquid"></div></div>
                 <span class="btn-text">
-                    Masuk dengan Sidik Jari
+                    Login Biometrik
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M2 12C2 6.477 6.477 2 12 2s10 4.477 10 10"/>
                         <path d="M17.846 17.846A8.962 8.962 0 0 0 21 12c0-4.97-4.03-9-9-9s-9 4.03-9 9c0 2.115.732 4.06 1.954 5.59"/>
@@ -73,13 +73,13 @@
             
             <div class="admin-controls">
                 <button class="btn-abu" onclick="bukaModalKehadiran()">Rekap Kehadiran</button>
-                <button class="btn-abu" onclick="bukaModalKelolaAdminKelas()">Kelola Admin</button>
+                <button class="btn-abu" onclick="bukaModalKelolaAdminKelas()">Kelola Pengabsen</button>
             </div>
             
             <button class="btn-fingerprint" onclick="daftarkanSidikJari()">
                 <div class="liquid-container"><div class="liquid"></div></div>
                 <span class="btn-text">
-                    Atur Sidik Jari
+                    Atur Biometrik
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M2 12C2 6.477 6.477 2 12 2s10 4.477 10 10"/>
                         <path d="M17.846 17.846A8.962 8.962 0 0 0 21 12c0-4.97-4.03-9-9-9s-9 4.03-9 9c0 2.115.732 4.06 1.954 5.59"/>
@@ -125,7 +125,7 @@
             <button class="btn-fingerprint" onclick="daftarkanSidikJari()">
                 <div class="liquid-container"><div class="liquid"></div></div>
                 <span class="btn-text">
-                    Atur Sidik Jari
+                    Atur Biometrik
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M2 12C2 6.477 6.477 2 12 2s10 4.477 10 10"/>
                         <path d="M17.846 17.846A8.962 8.962 0 0 0 21 12c0-4.97-4.03-9-9-9s-9 4.03-9 9c0 2.115.732 4.06 1.954 5.59"/>
@@ -184,12 +184,12 @@
                         <canvas id="canvas-kamera" class="hidden"></canvas>
                     </div>
                     <button class="btn-abu" id="btn-capture" onclick="takeSnapshot()" style="margin-bottom: 0;">Ambil Foto</button>
-                    <button class="btn-outline hidden" id="btn-retake" onclick="retakePhoto()" style="margin-bottom: 0;">Ulang Foto</button>
+                    <button class="btn-outline hidden" id="btn-retake" onclick="retakePhoto()" style="margin-bottom: 0;">Retake?</button>
                     <input type="hidden" id="foto-data" value="">
                 </div>
             </div>
             <br>
-            <button class="btn-primary" onclick="kirimAbsen()">KIRIM DATA</button>
+            <button class="btn-primary" onclick="kirimAbsen()">KIRIM ABSENSI</button>
             <button class="btn-text" onclick="switchPanel('panel-awal')">BATALKAN</button>
         </div>
     </div>
@@ -249,7 +249,7 @@
 
     <div id="modal-peringkat-kelas" class="modal-overlay" onclick="closeModal('modal-peringkat-kelas')">
         <div class="modal-content" onclick="event.stopPropagation()">
-            <div class="modal-header"><h3>🏆 Peringkat Kelas</h3><button class="close-btn" onclick="closeModal('modal-peringkat-kelas')"><svg width="20" height="20"><use href="#icon-close"></use></svg></button></div>
+            <div class="modal-header"><h3>Peringkat Kelas</h3><button class="close-btn" onclick="closeModal('modal-peringkat-kelas')"><svg width="20" height="20"><use href="#icon-close"></use></svg></button></div>
             <div class="table-responsive table-rank">
                 <table>
                     <thead><tr><th style="text-align:center; width:60px;">Rank</th><th>Kelas</th><th style="text-align:center; width:120px;">Tidak Hadir</th></tr></thead>
@@ -261,7 +261,7 @@
 
     <div id="modal-peringkat-siswa" class="modal-overlay" onclick="closeModal('modal-peringkat-siswa')">
         <div class="modal-content" onclick="event.stopPropagation()">
-            <div class="modal-header"><h3>🌟 Siswa Terteladan</h3><button class="close-btn" onclick="closeModal('modal-peringkat-siswa')"><svg width="20" height="20"><use href="#icon-close"></use></svg></button></div>
+            <div class="modal-header"><h3>Siswa Terteladan</h3><button class="close-btn" onclick="closeModal('modal-peringkat-siswa')"><svg width="20" height="20"><use href="#icon-close"></use></svg></button></div>
             <div style="margin-bottom: 15px;">
                 <input type="hidden" id="filter-peringkat-kelas-val" value="Semua">
                 <div class="custom-select-btn" onclick="openModal('modal-peringkat-kelas-pilih')">
@@ -279,7 +279,7 @@
 
     <div id="modal-peringkat-siswa-kelas" class="modal-overlay" onclick="closeModal('modal-peringkat-siswa-kelas')">
         <div class="modal-content" onclick="event.stopPropagation()">
-            <div class="modal-header"><h3>🌟 Terteladan Kelas</h3><button class="close-btn" onclick="closeModal('modal-peringkat-siswa-kelas')"><svg width="20" height="20"><use href="#icon-close"></use></svg></button></div>
+            <div class="modal-header"><h3>Terteladan Kelas</h3><button class="close-btn" onclick="closeModal('modal-peringkat-siswa-kelas')"><svg width="20" height="20"><use href="#icon-close"></use></svg></button></div>
             <div class="table-responsive table-rank">
                 <table>
                     <thead><tr><th style="text-align:center; width:60px;">Rank</th><th>Nama Siswa</th><th style="text-align:center; width:120px;">Tidak Hadir</th></tr></thead>
@@ -319,7 +319,7 @@
 
     <div id="modal-kelola-admin" class="modal-overlay" onclick="closeModal('modal-kelola-admin')">
         <div class="modal-content" onclick="event.stopPropagation()">
-            <div class="modal-header"><h3>Kelola Admin Perkelas</h3><button class="close-btn" onclick="closeModal('modal-kelola-admin')"><svg width="20" height="20"><use href="#icon-close"></use></svg></button></div>
+            <div class="modal-header"><h3>Kelola Pengabsen</h3><button class="close-btn" onclick="closeModal('modal-kelola-admin')"><svg width="20" height="20"><use href="#icon-close"></use></svg></button></div>
             <div id="daftar-admin-kelas" style="margin-bottom: 20px;"></div>
             <div class="form-group"><label>Username Baru</label><input type="text" id="admin-baru-user" class="input-field"></div>
             <div class="form-group">
@@ -335,7 +335,7 @@
             <div class="form-group">
                 <label>Kelas</label>
                 <input type="hidden" id="admin-baru-kelas">
-                <div class="custom-select-btn" onclick="openModal('modal-admin-kelas-pilih')"><span id="teks-admin-baru-kelas">-- Pilih Kelas --</span><span>▼</span></div>
+                <div class="custom-select-btn" onclick="openModal('modal-admin-kelas-pilih')"><span id="teks-admin-baru-kelas">Pilih Kelas</span><span>▼</span></div>
             </div>
             <button class="btn-blue" onclick="tambahAdminKelas()">Tambah Admin</button>
         </div>
