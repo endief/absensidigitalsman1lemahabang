@@ -408,434 +408,6 @@ div:where(.swal2-container) button:where(.swal2-styled).swal2-cancel { backgroun
 @keyframes p-bounce-soft { 0% { transform: scale(1); } 40% { transform: scale(1.15); } 100% { transform: scale(1); } }
 
 /* ======================================================= */
-/* ========== SNACKBAR (NOTIFIKASI ATAS LAYAR) =========== */
-/* ======================================================= */
-.premium-snackbar {
-    position: fixed; top: -100px; left: 50%; transform: translateX(-50%);
-    background: white; border-radius: 50px; padding: 12px 24px 12px 14px;
-    box-shadow: 0 16px 40px rgba(0,0,0,0.15); display: flex; align-items: center; gap: 12px;
-    z-index: 10000; transition: top 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.6s;
-    opacity: 0; pointer-events: none; font-family: var(--font-body); font-size: 14px;
-}
-.premium-snackbar.show { top: 32px; opacity: 1; pointer-events: auto; }
-.sb-icon-wrapper { width: 32px; height: 32px; display: flex; justify-content: center; align-items: center; border-radius: 50%; color: white; flex-shrink: 0; }
-.sb-success { background: #10b981; }
-.sb-error { background: #ef4444; }
-.sb-warning { background: #f59e0b; }
-.sb-text-container { display: flex; flex-direction: column; text-align: left; }
-.sb-title { font-weight: 800; color: #0f172a; line-height: 1.2; }
-.sb-desc { color: #64748b; font-size: 13px; font-weight: 500; }
-
-/* ========== GLOBAL & VARIABEL ========== */
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
-
-:root {
-    --bg-color: #f4f7f6;
-    --text-main: #1e293b;
-    --text-muted: #64748b;
-    --font-heading: 'Outfit', sans-serif;
-    --font-body: 'Plus Jakarta Sans', sans-serif;
-}
-
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-    -webkit-tap-highlight-color: transparent;
-}
-
-body {
-    background-color: var(--bg-color);
-    background-image: radial-gradient(#cbd5e1 1.5px, transparent 1.5px);
-    background-size: 25px 25px;
-    color: var(--text-main);
-    font-family: var(--font-body);
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    min-height: 100vh;
-    padding: 20px;
-}
-
-.glow-bg { display: none; }
-
-/* ========== MAIN CONTAINER ========== */
-.app-container {
-    background: #ffffff;
-    width: 100%;
-    max-width: 480px;
-    border-radius: 32px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05);
-    overflow: hidden;
-    padding: 40px 30px;
-    position: relative;
-    margin-top: 10px;
-}
-
-.app-container.admin-mode { max-width: 800px; }
-
-/* ========== PANEL & TYPOGRAPHY ========== */
-.panel { display: none; animation: fadeIn 0.4s ease forwards; text-align: center; }
-.panel.active { display: block; }
-@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-/* Logo Default */
-.logo-sekolah { display: block; max-width: 95px; margin: 0 auto 15px auto; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1)); }
-#panel-awal .logo-sekolah, #panel-absen .logo-sekolah { max-width: 130px; margin-bottom: 20px; }
-
-.portal-title, .judul-absen, .panel-title { font-family: var(--font-heading); font-size: 26px; font-weight: 800; color: #0f172a; line-height: 1.2; margin-bottom: 5px; text-align: center; }
-.sub-absen, .instansi-sub { font-family: var(--font-body); color: #94a3b8; font-size: 14px; font-weight: 500; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 30px; text-align: center; }
-.text-cyan { color: #0369a1 !important; text-transform: uppercase; letter-spacing: 1px; font-size: 14px; font-weight: 700; margin-bottom: 30px; text-align: center; }
-
-/* ========== INPUT & FORM (MODERN PILL SHAPE) ========== */
-.form-group { margin-bottom: 24px; text-align: left; }
-.form-group label { display: block; font-size: 14px; font-weight: 700; margin-bottom: 10px; margin-left: 12px; color: #1e293b; }
-
-.input-field, .custom-select-btn {
-    font-family: var(--font-body); width: 100%; padding: 18px 24px; background: #ffffff; border: none;
-    border-radius: 50px; font-size: 15px; color: #334155; outline: none; box-shadow: 0 8px 24px rgba(149, 157, 165, 0.15);
-    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); cursor: pointer;
-}
-
-.input-field:focus, .custom-select-btn:hover { box-shadow: 0 12px 32px rgba(149, 157, 165, 0.25); transform: translateY(-2px); }
-.input-field::placeholder { color: #94a3b8; }
-.custom-select-btn { display: flex; justify-content: space-between; align-items: center; }
-
-/* ========== TOMBOL (SERAGAM PILL SHAPE) ========== */
-button {
-    font-family: var(--font-body); width: 100%; padding: 16px 24px; border: none; border-radius: 50px;
-    font-size: 15px; font-weight: 700; cursor: pointer; margin-bottom: 15px; transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-}
-button:hover { transform: translateY(-3px); }
-button:active { transform: translateY(1px); }
-
-.btn-primary { background: #991b1b; color: white; box-shadow: 0 6px 16px rgba(153, 27, 27, 0.3); } 
-.btn-primary:hover { box-shadow: 0 8px 24px rgba(153, 27, 27, 0.45); background: #7f1d1d; }
-.btn-blue { background: #1e3a8a; color: white; box-shadow: 0 6px 16px rgba(30, 58, 138, 0.3); } 
-.btn-blue:hover { box-shadow: 0 8px 24px rgba(30, 58, 138, 0.45); background: #172554; }
-.btn-merah { background: #991b1b; color: white; box-shadow: 0 6px 16px rgba(153, 27, 27, 0.3); }
-.btn-merah:hover { background: #7f1d1d; }
-.btn-oren { background: #9a3412; color: white; box-shadow: 0 6px 16px rgba(154, 52, 18, 0.3); } 
-.btn-oren:hover { background: #7c2d12; }
-.btn-cyan { background: #0f766e; color: white; box-shadow: 0 6px 16px rgba(15, 118, 110, 0.3); } 
-.btn-cyan:hover { background: #115e59; }
-.btn-pink-soft { background: #831843; color: white; box-shadow: 0 6px 16px rgba(131, 24, 67, 0.3); } 
-.btn-pink-soft:hover { background: #701a3d; }
-.btn-abu { background: #334155; color: white; box-shadow: 0 6px 16px rgba(51, 65, 85, 0.3); } 
-.btn-abu:hover { background: #1e293b; }
-.btn-outline { background: #ffffff; color: #0f172a; border: none; box-shadow: 0 8px 24px rgba(149, 157, 165, 0.15); }
-.btn-outline:hover { background: #ffffff; box-shadow: 0 12px 32px rgba(149, 157, 165, 0.25); }
-.btn-text { background: transparent; color: #64748b; font-weight: 700; box-shadow: none; }
-.btn-text:hover { color: #1e293b; transform: none; }
-
-/* Grid Tombol Admin */
-.admin-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
-.btn-small { padding: 8px 20px; font-size: 13px; border-radius: 50px; margin: 0; box-shadow: none; font-weight: 700; width: max-content !important; display: inline-block;}
-.btn-small:hover { transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-.btn-delete-small { background: #fee2e2; color: #b91c1c; }
-
-
-/* ========================================================== */
-/* ========== TOMBOL SIDIK JARI (LIQUID ANIMATION) ========== */
-/* ========================================================== */
-.btn-fingerprint {
-    position: relative;
-    overflow: hidden;
-    width: 100%;
-    padding: 16px 24px;
-    background: #FFFFFF; /* Putih bersih */
-    border: none;
-    border-radius: 50px; /* Pill shape */
-    font-family: var(--font-body);
-    font-size: 15px;
-    font-weight: 800;
-    color: #0F2D5C; /* Biru Tua */
-    box-shadow: 0 8px 24px rgba(149, 157, 165, 0.15); /* Soft gray shadow */
-    cursor: pointer;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
-    margin-bottom: 15px;
-    z-index: 1;
-    -webkit-tap-highlight-color: transparent;
-}
-
-.btn-fingerprint .btn-text {
-    position: relative;
-    z-index: 2;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    transition: color 0.5s ease;
-}
-
-.btn-fingerprint svg {
-    width: 22px;
-    height: 22px;
-    stroke: currentColor;
-    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1), stroke 0.5s ease;
-}
-
-/* Pembungkus agar cairan tidak keluar dari lengkungan tombol */
-.btn-fingerprint .liquid-container {
-    position: absolute;
-    top: 0; left: 0; right: 0; bottom: 0;
-    border-radius: 50px;
-    overflow: hidden;
-    z-index: 0;
-}
-
-/* Cairan ombak utama */
-.btn-fingerprint .liquid {
-    position: absolute;
-    top: 120%; /* Tersembunyi di bawah */
-    left: 50%;
-    width: 500px;
-    height: 500px;
-    margin-left: -250px;
-    background: #0F2D5C;
-    border-radius: 40%; /* Membentuk ombak saat diputar */
-    animation: liquid-spin 6s infinite linear;
-    transition: top 0.8s cubic-bezier(0.3, 0.9, 0.3, 1);
-}
-
-/* Pantulan kilau (Glossy) cairan */
-.btn-fingerprint .liquid::before {
-    content: '';
-    position: absolute;
-    top: -10px; left: -15px; right: -5px; bottom: -5px;
-    background: rgba(255, 255, 255, 0.15);
-    border-radius: 43%;
-    animation: liquid-spin 5s infinite linear reverse;
-}
-
-/* Lapisan ombak kedua (lebih gelap/transparan) */
-.btn-fingerprint .liquid::after {
-    content: '';
-    position: absolute;
-    top: -20px; left: -10px; right: -20px; bottom: -10px;
-    background: rgba(15, 45, 92, 0.5);
-    border-radius: 38%;
-    animation: liquid-spin 7s infinite linear;
-}
-
-@keyframes liquid-spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
-/* Efek saat tombol disentuh / aktif */
-.btn-fingerprint:hover,
-.btn-fingerprint:active {
-    box-shadow: 0 14px 32px rgba(15, 45, 92, 0.25);
-    transform: translateY(-2px);
-}
-
-.btn-fingerprint:active { transform: translateY(1px); }
-
-/* Cairan naik ke atas menutupi tombol */
-.btn-fingerprint:hover .liquid,
-.btn-fingerprint:active .liquid {
-    top: -200px; 
-}
-
-/* Warna teks & ikon berubah jadi putih */
-.btn-fingerprint:hover .btn-text,
-.btn-fingerprint:active .btn-text {
-    color: #FFFFFF;
-}
-
-/* Ikon membesar & sedikit berputar */
-.btn-fingerprint:hover svg,
-.btn-fingerprint:active svg {
-    transform: scale(1.15) rotate(-5deg);
-}
-
-
-/* ========== LIST NAMA & TABEL ========== */
-.name-list {
-    max-height: 220px; overflow-y: auto; border-radius: 24px; background: #ffffff;
-    box-shadow: 0 10px 30px rgba(149, 157, 165, 0.15); margin-bottom: 15px; margin-top: 10px; text-align: left; padding: 8px 0;
-}
-.name-item {
-    padding: 16px 24px; cursor: pointer; border-bottom: 1px solid #f8fafc; font-size: 14px;
-    font-weight: 600; display: flex; justify-content: space-between; align-items: center; transition: background 0.2s;
-}
-.name-item:last-child { border-bottom: none; }
-.name-item:hover { background: #f8fafc; color: #0ea5e9; }
-.name-item.terpilih { background: #f0f9ff; color: #0284c7; font-weight: 700; }
-.name-item.disabled { color: #94a3b8; pointer-events: none; }
-
-.table-responsive {
-    width: 100%; overflow-x: auto; border: none; border-radius: 20px;
-    box-shadow: 0 8px 24px rgba(149, 157, 165, 0.1); background: #ffffff; margin-bottom: 15px; text-align: left;
-}
-table { width: 100%; border-collapse: collapse; min-width: 600px; }
-th { 
-    background: #f8fafc; padding: 16px 24px; font-size: 12px; color: #64748b; text-transform: uppercase; font-weight: 700; border-bottom: 2px solid #f1f5f9;
-    border-left: none !important; border-right: none !important; 
-}
-td { 
-    padding: 16px 24px; font-size: 14px; border-bottom: 1px solid #f1f5f9; color: #1e293b; font-weight: 500;
-    border-left: none !important; border-right: none !important; vertical-align: middle;
-}
-tr:last-child td { border-bottom: none; }
-
-.table-rank { max-width: 400px; margin: 0 auto; }
-.table-rank table { min-width: 100%; }
-
-.badge-status { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 50px; font-size: 12px; font-weight: 800; }
-.badge-hadir { background-color: #dcfce7; color: #166534; }
-.badge-alpha { background-color: #fee2e2; color: #991b1b; }
-.badge-belum { background-color: #f1f5f9; color: #475569; }
-
-/* ========== ANIMASI SVG MODERN ========== */
-.anim-check, .anim-cross { stroke-dasharray: 50; stroke-dashoffset: 50; animation: drawIcon 0.5s ease forwards; }
-@keyframes drawIcon { to { stroke-dashoffset: 0; } }
-
-/* ========== KAMERA ========== */
-.camera-wrapper { width: 100%; border-radius: 24px; overflow: hidden; background: #000; margin-bottom: 15px; box-shadow: 0 8px 24px rgba(0,0,0,0.1); }
-video, canvas { width: 100%; display: block; transform: scaleX(-1); }
-#canvas-kamera { transform: none; }
-.hidden { display: none !important; }
-
-/* ========== MODAL ========== */
-.modal-overlay {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(15,23,42,0.6); backdrop-filter: blur(4px);
-    display: flex; justify-content: center; align-items: center;
-    opacity: 0; visibility: hidden; transition: 0.3s; z-index: 1000;
-}
-.modal-overlay.show { opacity: 1; visibility: visible; }
-.modal-content {
-    background: #ffffff; width: 90%; max-width: 420px; border-radius: 32px; padding: 30px 25px;
-    transform: scale(0.95) translateY(20px); transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    max-height: 85vh; overflow-y: auto; text-align: left; box-shadow: 0 20px 40px rgba(0,0,0,0.2);
-}
-.modal-overlay.show .modal-content { transform: scale(1) translateY(0); }
-.modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
-.modal-header h3 { font-size: 18px; font-weight: 800; color: #0f172a; }
-
-.close-btn { 
-    background: #f1f5f9; border: none; width: 36px; height: 36px; 
-    border-radius: 50%; cursor: pointer; display: flex; justify-content: center; align-items: center;
-    color: #64748b; padding: 0; margin: 0; box-shadow: none; transition: 0.2s;
-}
-.close-btn:hover { background: #fee2e2; color: #ef4444; transform: rotate(90deg); }
-
-.modal-item { 
-    padding: 16px 20px; border-bottom: 1px solid #f1f5f9; cursor: pointer; font-weight: 700; text-align: center; color: #334155; transition: 0.2s;
-}
-.modal-item:last-child { border-bottom: none; }
-.modal-item:hover { background: #f0f9ff; color: #0284c7; border-radius: 16px; }
-
-/* ========== ANIMASI LOADING MZ-LOADER ========== */
-.mz-loader-container { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 10px 0; }
-.mz-loader { display: flex; align-items: flex-end; justify-content: center; gap: 8px; height: 35px; margin-bottom: 12px; }
-.mz-loader span { height: 12px; width: 12px; background-color: #0ea5e9; border-radius: 50%; animation: mz-bounce 0.6s ease-in-out infinite alternate; }
-.mz-loader span:nth-child(1) { animation-delay: 0s; }
-.mz-loader span:nth-child(2) { animation-delay: 0.2s; }
-.mz-loader span:nth-child(3) { animation-delay: 0.4s; }
-@keyframes mz-bounce { 0% { transform: translateY(0); } 100% { transform: translateY(-16px); } }
-.mz-text { font-family: var(--font-body); font-size: 14px; font-weight: 700; color: #1e293b; text-align: center; }
-
-/* Modifikasi SweetAlert Bawaan */
-div:where(.swal2-container) .swal2-popup { border-radius: 32px; font-family: var(--font-body); box-shadow: 0 20px 40px rgba(0,0,0,0.2); }
-div:where(.swal2-container) button:where(.swal2-styled).swal2-confirm { background-color: #1e3a8a !important; border-radius: 50px !important; box-shadow: 0 6px 16px rgba(30, 58, 138, 0.3) !important; font-weight: 700; }
-div:where(.swal2-container) button:where(.swal2-styled).swal2-cancel { background-color: #f1f5f9 !important; color: #0f172a !important; border-radius: 50px !important; font-weight: 700; }
-
-/* ======================================================= */
-/* ========== PREMIUM CUSTOM ALERT & ANIMATION =========== */
-/* ======================================================= */
-
-.premium-overlay {
-    position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-    background: rgba(15,23,42,0.4); backdrop-filter: blur(6px);
-    display: flex; justify-content: center; align-items: center;
-    z-index: 9999; opacity: 0; visibility: hidden; transition: 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
-}
-.premium-overlay.show { opacity: 1; visibility: visible; }
-
-.premium-card {
-    background: white; border-radius: 32px; padding: 40px 30px;
-    box-shadow: 0 24px 48px rgba(0,0,0,0.15); text-align: center;
-    width: 90%; max-width: 320px; 
-    transform: scale(0.9) translateY(15px); 
-    transition: 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); /* Efek pantulan lembut */
-}
-.premium-overlay.show .premium-card { transform: scale(1) translateY(0); }
-
-/* Wadah Ikon Tengah */
-.p-icon-container {
-    position: relative; width: 80px; height: 80px; margin: 0 auto 20px auto;
-    display: flex; justify-content: center; align-items: center;
-}
-
-/* Tiga Titik Loading */
-.p-dots { position: absolute; width: 100%; height: 100%; z-index: 3; transition: 0.3s; }
-.is-finished .p-dots { opacity: 0; visibility: hidden; }
-
-.p-dot {
-    position: absolute; width: 12px; height: 12px; border-radius: 50%;
-    background: #0F2D5C; top: 50%; left: 50%; margin: -6px 0 0 -6px;
-}
-
-/* Animasi Titik Melompat Lembut */
-.is-loading .p-dot:nth-child(1) { transform: translateX(-24px); animation: p-b1 0.6s infinite alternate cubic-bezier(0.4, 0, 0.2, 1); }
-.is-loading .p-dot:nth-child(2) { transform: translateX(0); animation: p-b2 0.6s infinite alternate 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
-.is-loading .p-dot:nth-child(3) { transform: translateX(24px); animation: p-b3 0.6s infinite alternate 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
-
-@keyframes p-b1 { to { transform: translate(-24px, -12px); } }
-@keyframes p-b2 { to { transform: translate(0, -12px); } }
-@keyframes p-b3 { to { transform: translate(24px, -12px); } }
-
-/* Animasi Titik Menyatu ke Tengah */
-.is-merging .p-dot {
-    animation: none; transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-    transform: translate(0, 0) scale(0); opacity: 0;
-}
-
-/* Lingkaran Utama */
-.p-circle {
-    position: absolute; width: 64px; height: 64px; border-radius: 50%;
-    background: #0F2D5C; top: 50%; left: 50%; margin: -32px 0 0 -32px;
-    transform: scale(0); opacity: 0;
-    transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.5s ease;
-    z-index: 1;
-}
-.is-merging .p-circle { transform: scale(1); opacity: 1; transition-delay: 0.1s; }
-.is-finished .p-circle { transform: scale(1); opacity: 1; }
-
-.is-success .p-circle { background: #10b981; } /* Hijau Sukses */
-.is-error .p-circle { background: #ef4444; }   /* Merah Gagal */
-.is-warning .p-circle { background: #f59e0b; } /* Orange Peringatan */
-
-/* SVG Draw Animation (Digambar Bertahap) */
-.p-svg {
-    position: absolute; width: 32px; height: 32px; top: 50%; left: 50%; margin: -16px 0 0 -16px;
-    fill: none; stroke: white; stroke-width: 3.5; stroke-linecap: round; stroke-linejoin: round;
-    stroke-dasharray: 100; stroke-dashoffset: 100; z-index: 2;
-}
-.is-finished .p-svg { animation: p-draw 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) forwards 0.2s; }
-@keyframes p-draw { to { stroke-dashoffset: 0; } }
-
-/* Gelombang (Ripple) Menyebar */
-.p-ripple {
-    position: absolute; width: 64px; height: 64px; border-radius: 50%;
-    border: 2px solid transparent; top: 50%; left: 50%; margin: -32px 0 0 -32px;
-    transform: scale(1); opacity: 0; z-index: 0;
-}
-.is-success .p-ripple { border-color: #10b981; animation: p-rip 1s cubic-bezier(0.16, 1, 0.3, 1) forwards 0.3s; }
-.is-error .p-ripple { border-color: #ef4444; animation: p-rip 1s cubic-bezier(0.16, 1, 0.3, 1) forwards 0.3s; }
-.is-warning .p-ripple { border-color: #f59e0b; animation: p-rip 1s cubic-bezier(0.16, 1, 0.3, 1) forwards 0.3s; }
-@keyframes p-rip { 0% { transform: scale(1); opacity: 0.8; } 100% { transform: scale(2.2); opacity: 0; } }
-
-/* Efek Memantul Lembut Setelah Ikon Digambar */
-.is-finished .p-icon-container { animation: p-bounce-soft 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) 0.3s; }
-@keyframes p-bounce-soft { 0% { transform: scale(1); } 40% { transform: scale(1.15); } 100% { transform: scale(1); } }
-
-/* ======================================================= */
 /* ========== TOMBOL KONFIRMASI PREMIUM ALERT ============ */
 /* ======================================================= */
 .p-actions {
@@ -864,3 +436,57 @@ div:where(.swal2-container) button:where(.swal2-styled).swal2-cancel { backgroun
 
 .p-btn-confirm.orange { background: #ea580c; box-shadow: 0 4px 12px rgba(234, 88, 12, 0.3); }
 .p-btn-confirm.orange:hover { background: #c2410c; box-shadow: 0 6px 16px rgba(234, 88, 12, 0.4); }
+
+/* ======================================================= */
+/* ============= EFEK GOOEY BUTTON (TIKTOK) ============== */
+/* ======================================================= */
+
+.goo-wrapper {
+    position: relative;
+    width: 100%;
+    margin-bottom: 15px; /* Memindahkan margin dari tombol ke wrapper */
+    filter: url('#gooey'); /* Menerapkan filter cairan SVG */
+    -webkit-filter: url('#gooey');
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1;
+}
+
+.btn-goo {
+    margin-bottom: 0 !important; /* Hilangkan margin bawaan tombol */
+    position: relative;
+    z-index: 10;
+}
+
+.bubble {
+    position: absolute;
+    border-radius: 50%;
+    z-index: -1;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* Ukuran masing-masing gelembung cairan */
+.bubble.b1 { width: 45px; height: 45px; }
+.bubble.b2 { width: 55px; height: 55px; }
+.bubble.b3 { width: 40px; height: 40px; }
+
+/* Animasi menyebar saat wrapper di-hover (Kursor) atau ditekan (Android/Touch) */
+.goo-wrapper:hover .bubble.b1, .goo-wrapper:active .bubble.b1 {
+    transform: translate(-90px, -45px) scale(1);
+}
+.goo-wrapper:hover .bubble.b2, .goo-wrapper:active .bubble.b2 {
+    transform: translate(60px, -35px) scale(1);
+    transition-delay: 0.05s;
+}
+.goo-wrapper:hover .bubble.b3, .goo-wrapper:active .bubble.b3 {
+    transform: translate(30px, 35px) scale(1);
+    transition-delay: 0.1s;
+}
+
+/* Penyesuaian warna cairan agar sama dengan warna tombol asli */
+.bg-primary-goo { background-color: #991b1b; } /* Sama dengan Merah Tua (btn-primary) */
+.bg-white-goo { background-color: #ffffff; }   /* Sama dengan Putih (btn-outline) */
