@@ -1,6 +1,4 @@
-// ==============================================================
-// ==== MESIN ANIMASI PREMIUM (LOADING/SUCCESS/CONFIRM) =========
-// ==============================================================
+// LOADING/SUCCESS/CONFIRM
 const PremiumAlert = {
     init() {
         if (document.getElementById('premium-overlay')) return;
@@ -243,7 +241,7 @@ function initFirebaseListeners() {
         if (status === 'ditutup' && absenPanel.classList.contains('active')) {
             switchPanel('panel-awal');
             matikanKamera();
-            PremiumAlert.finish('warning', 'Sesi Ditutup', 'Absensi saat ini ditutup oleh pengelola.');
+            PremiumAlert.finish('warning', 'Absensi Ditutup', 'Absensi saat ini ditutup oleh pengelola.');
         }
     });
 }
@@ -269,9 +267,9 @@ function verifikasiLokasi() {
             (position) => {
                 const jarak = hitungJarak(position.coords.latitude, position.coords.longitude, KANTOR_LAT, KANTOR_LON);
                 if (jarak <= BATAS_JARAK_METER) resolve(jarak);
-                else reject(`Anda berada di luar area absen! Jarak Anda ${Math.round(jarak)} meter.`);
+                else reject(`Anda berada di luar area smansala! Jarak Anda ${Math.round(jarak)} meter.`);
             },
-            (error) => reject("Gagal mendapatkan lokasi. Pastikan GPS menyala."),
+            (error) => reject("Gagal mendapatkan lokasi. Pastikan fitur lokasi menyala."),
             { enableHighAccuracy: true, timeout: 10000 } 
         );
     });
@@ -297,14 +295,14 @@ async function loginUmum() {
     const pass = document.getElementById('admin-pass').value.trim();
     if (!user || !pass) return PremiumAlert.finish('warning', 'Gagal', 'Silakan isi username dan password.');
 
-    PremiumAlert.showLoading('Memeriksa...', 'Sedang masuk ke sistem');
+    PremiumAlert.showLoading('Memeriksa...', 'Mohon tunggu sebentar');
 
     const adminSnap = await firebase.database().ref('admin/' + user).once('value');
     if (adminSnap.exists() && adminSnap.val().password === pass) {
         currentUser = { role: 'admin', username: user }; 
         document.getElementById('admin-user').value = ''; document.getElementById('admin-pass').value = '';
         PremiumAlert.close();
-        PremiumAlert.showSnackbar('success', 'Akses Diterima', `Selamat datang kembali, ${user}.`);
+        PremiumAlert.showSnackbar('success', 'Berhasil!', `Selamat datang tuan, ${user}.`);
         switchPanel('panel-dashboard-admin', true);
         renderTabelAdmin(); updateTeksTombolBukaTutup();
         return;
@@ -316,9 +314,9 @@ async function loginUmum() {
         currentUser = { role: 'admin_kelas', username: user, kelas: data.kelas };
         document.getElementById('admin-user').value = ''; document.getElementById('admin-pass').value = '';
         PremiumAlert.close();
-        PremiumAlert.showSnackbar('success', 'Akses Diterima', `Selamat datang Admin Kelas ${data.kelas}.`);
+        PremiumAlert.showSnackbar('success', 'Berhasil!', `Selamat datang Pengabsen ${data.kelas}.`);
         switchPanel('panel-dashboard-kelas', true);
-        document.getElementById('admin-kelas-display').innerText = `Admin Kelas ${data.kelas}`;
+        document.getElementById('admin-kelas-display').innerText = `Pengabsen ${data.kelas}`;
         renderTabelKelas();
         return;
     }
@@ -337,7 +335,7 @@ function bukaModalKelolaAdminKelas() {
     renderDaftarAdminKelas();
     generateAdminKelasPilihList();
     document.getElementById('admin-baru-kelas').value = '';
-    document.getElementById('teks-admin-baru-kelas').innerText = '-- Pilih Kelas --';
+    document.getElementById('teks-admin-baru-kelas').innerText = 'Pilih Kelas';
 }
 
 async function renderDaftarAdminKelas() {
@@ -345,7 +343,7 @@ async function renderDaftarAdminKelas() {
     const snap = await firebase.database().ref('admin_perkelas').once('value');
     const data = snap.val() || {};
     const adminArray = Object.keys(data).map(username => ({ username, ...data[username] }));
-    if (adminArray.length === 0) return container.innerHTML = '<p style="color:#888; text-align:center;">Belum ada admin perkelas.</p>';
+    if (adminArray.length === 0) return container.innerHTML = '<p style="color:#888; text-align:center;">Belum ada pengabsen.</p>';
     
     container.innerHTML = adminArray.map(a => `
         <div style="display:flex; justify-content:space-between; align-items:center; padding:10px; border:1px solid #e2e8f0; border-radius:12px; margin-bottom:8px;">
@@ -387,7 +385,7 @@ async function tambahAdminKelas() {
 }
 
 async function hapusAdminKelas(username) {
-    const isConfirmed = await PremiumAlert.confirm('Cabut Akses?', `Admin ${username} akan dihapus dari sistem.`, 'Ya, Cabut');
+    const isConfirmed = await PremiumAlert.confirm('Cabut Akses?', `Admin ${username} akan dihapus dari sistem.`, 'Ya');
     if (isConfirmed) {
         PremiumAlert.showLoading('Menghapus...', 'Mencabut akses admin');
         await firebase.database().ref('admin_perkelas/' + username).remove();
@@ -424,7 +422,7 @@ async function hapusDataIndividu(id) {
     const snap = await firebase.database().ref('absensi/' + id).once('value');
     const data = snap.val();
     
-    const isConfirmed = await PremiumAlert.confirm('Hapus Absensi?', "Data absensi ini akan dihapus secara permanen.", "Ya, Hapus");
+    const isConfirmed = await PremiumAlert.confirm('Hapus Absensi?', "Data absensi ini akan dihapus.", "Ya");
     if (isConfirmed) {
         PremiumAlert.showLoading('Menghapus...', 'Menghapus data dari Absensi');
         if (data && data.status === 'Tidak Hadir') {
@@ -436,39 +434,39 @@ async function hapusDataIndividu(id) {
         }
         if (data && data.filePath) await hapusFileDariSupabase(data.filePath);
         await firebase.database().ref('absensi/' + id).remove();
-        PremiumAlert.finish('success', 'Terhapus', 'Absen berhasil dihapus dari Absensi.');
+        PremiumAlert.finish('success', 'Terhapus', 'Absen berhasil dihapus.');
     }
 }
 
 async function resetSemuaData() {
-    const isConfirmed = await PremiumAlert.confirm('Reset Harian?', "Seluruh absen hari ini akan dihapus.", "Reset Harian");
+    const isConfirmed = await PremiumAlert.confirm('Reset Harian?', "Seluruh absen hari ini akan dihapus.", "Reset");
     if (isConfirmed) {
-        PremiumAlert.showLoading('Mereset Data...', 'Membersihkan data absensi hari ini');
+        PremiumAlert.showLoading('Mereset Absensi...', 'Membersihkan data absensi hari ini');
         const snap = await firebase.database().ref('absensi').once('value');
         const allData = snap.val() || {};
         const filePaths = Object.values(allData).map(d => d.filePath).filter(Boolean);
         if (filePaths.length > 0) await supabaseClient.storage.from('foto-absensi').remove(filePaths);
         await firebase.database().ref('absensi').remove();
-        PremiumAlert.finish('success', 'Direset', 'Seluruh data absensi telah dikosongkan.');
+        PremiumAlert.finish('success', 'Berhasil', 'Seluruh data absensi telah dihapus.');
     }
 }
 
 async function resetRekapBulanan() {
-    const isConfirmed = await PremiumAlert.confirm('Reset Bulanan?', "Peringkat Kelas dan Siswa Terteladan akan dikembalikan menjadi 0.", "Reset Bulanan", true);
+    const isConfirmed = await PremiumAlert.confirm('Reset Bulanan?', "Peringkat Kelas dan Siswa Terteladan akan dikembalikan menjadi 0.", "Reset", true);
     if (isConfirmed) {
-        PremiumAlert.showLoading('Mereset Peringkat...', 'Menghapus rekam bulanan');
+        PremiumAlert.showLoading('Mereset Riwayat...', 'Menghapus riwayat bulanan');
         await firebase.database().ref('rekap_bulanan').remove();
-        PremiumAlert.finish('success', 'Direset', 'Peringkat bulanan berhasil dikosongkan.');
+        PremiumAlert.finish('success', 'Berhasil', 'Peringkat bulanan berhasil dikosongkan.');
     }
 }
 
 function downloadExcel() {
-    if (dbAbsensi.length === 0) return PremiumAlert.finish('warning', 'Kosong', 'Belum ada data untuk diunduh.');
+    if (dbAbsensi.length === 0) return PremiumAlert.finish('warning', 'Kosong', 'Belum ada data absensi untuk diunduh.');
     const dataToExport = dbAbsensi.map(item => ({ "Nama Siswa": item.nama, "Kelas": item.kelas, "Hari": item.hari, "Status": item.status, "Alasan": item.keterangan || "Bukti", "Tanggal & Jam": item.waktuStr }));
     const worksheet = XLSX.utils.json_to_sheet(dataToExport);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Rekap Absen");
-    XLSX.writeFile(workbook, "Rekap_Absensi_Semua.xlsx");
+    XLSX.writeFile(workbook, "Rekap_Absensi.xlsx");
 }
 
 // ==== LOGIKA TUTUP ABSENSI & AUTO ALPHA ====
@@ -488,7 +486,7 @@ async function toggleStatusAbsensi() {
 
 async function prosesTutupAbsensi(hariDitutup) {
     closeModal('modal-tutup-absen-hari');
-    PremiumAlert.showLoading('Memproses Rekap...', 'Siswa yang belum absen akan dijadikan Tidak Hadir');
+    PremiumAlert.showLoading('Memproses Rekap...', 'Siswa yang belum absen akan otomatis Tidak Hadir');
     
     try {
         let updates = {};
@@ -525,7 +523,7 @@ async function prosesTutupAbsensi(hariDitutup) {
         await firebase.database().ref('settings/status_absen').set('ditutup');
         
         updateTeksTombolBukaTutup();
-        PremiumAlert.finish('success', 'Sesi Ditutup', `Rekap hari ${hariDitutup} berhasil diproses.`);
+        PremiumAlert.finish('success', 'Absensi Ditutup', `Rekap hari ${hariDitutup} berhasil diproses.`);
 
     } catch (error) {
         console.error("Error Tutup Absen:", error);
@@ -547,7 +545,7 @@ async function updateTeksTombolBukaTutup() {
 async function cekDanBukaAbsen() {
     const snapshot = await firebase.database().ref('settings/status_absen').once('value');
     const isClosed = snapshot.val() === 'ditutup';
-    if (isClosed) PremiumAlert.finish('warning', 'Sesi Ditutup', 'Tidak bisa absen saat ini.');
+    if (isClosed) PremiumAlert.finish('warning', 'Absensi Ditutup', 'Tidak bisa absen saat ini.');
     else switchPanel('panel-absen');
 }
 
@@ -578,14 +576,14 @@ function renderTabelKelas() {
 
 async function resetDataKelas() {
     const kelas = currentUser.kelas;
-    const isConfirmed = await PremiumAlert.confirm('Reset Data Kelas?', `Yakin ingin mereset absensi kelas ${kelas}?`, "Ya, Reset");
+    const isConfirmed = await PremiumAlert.confirm('Reset Absensi Kelas?', `Yakin ingin mereset absensi kelas ${kelas}?`, "Ya, Reset");
     if (isConfirmed) {
-        PremiumAlert.showLoading('Mereset Kelas...', `Menghapus data kelas ${kelas}`);
+        PremiumAlert.showLoading('Mereset Kelas...', `Menghapus data absensi kelas ${kelas}`);
         const dataKelas = dbAbsensi.filter(item => item.kelas === kelas);
         const filePaths = dataKelas.map(d => d.filePath).filter(Boolean);
         if (filePaths.length > 0) await supabaseClient.storage.from('foto-absensi').remove(filePaths);
         for (const item of dataKelas) await firebase.database().ref('absensi/' + item.id).remove();
-        PremiumAlert.finish('success', 'Berhasil', `Data kelas ${kelas} telah dibersihkan.`);
+        PremiumAlert.finish('success', 'Berhasil', `Data absensi kelas ${kelas} telah dibersihkan.`);
     }
 }
 
@@ -850,7 +848,7 @@ async function mulaiKamera() {
         document.getElementById('video-kamera').srcObject = streamKamera; document.getElementById('video-kamera').classList.remove('hidden');
         document.getElementById('canvas-kamera').classList.add('hidden'); document.getElementById('btn-capture').classList.remove('hidden'); document.getElementById('btn-retake').classList.add('hidden');
     } catch (err) {
-        PremiumAlert.finish('error', 'Akses Kamera Ditolak', 'Harap izinkan browser menggunakan kamera.');
+        PremiumAlert.finish('error', 'Izin Kamera Ditolak', 'Harap izinkan browser menggunakan kamera.');
     }
 }
 function matikanKamera() { if (streamKamera) streamKamera.getTracks().forEach(track => track.stop()); }
@@ -881,17 +879,17 @@ async function kirimAbsen() {
 
     if (!kelas || !hari || !nama) return PremiumAlert.finish('warning', 'Gagal Mengirim', 'Pastikan Kelas, Hari, dan Nama sudah dipilih.');
 
-    PremiumAlert.showLoading('Verifikasi GPS...', 'Memastikan Anda berada di area SMANSALA');
+    PremiumAlert.showLoading('Verifikasi lokasi...', 'Memastikan Anda berada di area SMANSALA');
     try { 
         const jarak = await verifikasiLokasi(); 
     } catch (pesanError) { 
-        return PremiumAlert.finish('error', 'Gagal Lokasi', pesanError); 
+        return PremiumAlert.finish('error', 'Verifikasi gagal', pesanError); 
     }
 
     let fotoSimpan = document.getElementById('foto-data').value;
     if (!fotoSimpan) return PremiumAlert.finish('warning', 'Bukti Diperlukan', 'Ambil foto *selfie* terlebih dahulu.');
 
-    PremiumAlert.showLoading('Mengirim Data...', 'Mohon tunggu beberapa detik');
+    PremiumAlert.showLoading('Mengirim Absensi...', 'Mohon tunggu beberapa detik');
 
     const timeNow = new Date(); const uniqueId = "ID_" + timeNow.getTime() + "_" + Math.random().toString(36).substr(2, 5); const waktuStr = timeNow.toLocaleString('id-ID');
     let publicUrl = ''; let fileName = '';
@@ -899,7 +897,7 @@ async function kirimAbsen() {
     if (fotoSimpan) {
         const blob = dataURLtoBlob(fotoSimpan); const fileExt = 'jpg'; fileName = `absensi_${uniqueId}.${fileExt}`;
         const { error: uploadError } = await supabaseClient.storage.from('foto-absensi').upload(fileName, blob, { contentType: 'image/jpeg', upsert: true });
-        if (uploadError) return PremiumAlert.finish('error', 'Koneksi Lemah', 'Gagal mengunggah foto bukti ke server.');
+        if (uploadError) return PremiumAlert.finish('error', 'Koneksi Lemah', 'Gagal mengunggah foto bukti.');
         const { data: publicUrlData } = supabaseClient.storage.from('foto-absensi').getPublicUrl(fileName); publicUrl = publicUrlData.publicUrl;
     }
 
@@ -949,7 +947,7 @@ renderNama();
 
 async function daftarkanSidikJari() {
     if (!window.PublicKeyCredential) {
-        return PremiumAlert.finish('error', 'Tidak Didukung', 'Browser atau HP Anda tidak mendukung sidik jari.');
+        return PremiumAlert.finish('error', 'Tidak Didukung', 'HP Anda tidak mendukung sidik jari.');
     }
 
     let username = "";
@@ -1015,7 +1013,7 @@ async function loginDenganSidikJari() {
         if (adminSnap.exists()) {
             currentUser = { role: 'admin', username: savedUser };
             PremiumAlert.close();
-            PremiumAlert.showSnackbar('success', 'Akses Diterima', `Selamat datang kembali, ${savedUser}.`);
+            PremiumAlert.showSnackbar('success', 'Berhasil!', `Selamat datang, ${savedUser}.`);
             switchPanel('panel-dashboard-admin', true);
             renderTabelAdmin(); updateTeksTombolBukaTutup();
             return;
@@ -1026,9 +1024,9 @@ async function loginDenganSidikJari() {
             const data = adminKelasSnap.val();
             currentUser = { role: 'admin_kelas', username: savedUser, kelas: data.kelas };
             PremiumAlert.close();
-            PremiumAlert.showSnackbar('success', 'Akses Diterima', `Selamat datang Admin Kelas ${data.kelas}.`);
+            PremiumAlert.showSnackbar('success', 'Berhasil!', `Selamat datang pengabsen ${data.kelas}.`);
             switchPanel('panel-dashboard-kelas', true);
-            document.getElementById('admin-kelas-display').innerText = `Admin Kelas ${data.kelas}`;
+            document.getElementById('admin-kelas-display').innerText = `Pengabsen Kelas ${data.kelas}`;
             renderTabelKelas();
             return;
         }
