@@ -5,7 +5,7 @@
   "display": "standalone",
   "background_color": "#f8fafc",
   "theme_color": "#0ea5e9",
-  "description": "Aplikasi absensi digital untuk siswa kelas XIF1-XIF10",
+  "description": "Aplikasi absensi digital untuk siswa SMAN 1 LEMAHABANG",
   "icons": [
     {
       "src": "https://raw.githubusercontent.com/endief/absensidigitalsman1lemahabang/250eb3dfec1bcefa494e569e92f74699f4fba057/SMANSALA.png",
