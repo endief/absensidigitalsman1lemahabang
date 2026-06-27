@@ -17,9 +17,14 @@
 }
 
 body {
+    /* Menggunakan background gambar yang baru diupload */
     background-color: var(--bg-color);
-    background-image: radial-gradient(#cbd5e1 1.5px, transparent 1.5px);
-    background-size: 25px 25px;
+    background-image: url('/bg.png'); 
+    background-size: cover;
+    background-position: top center;
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+    
     color: var(--text-main);
     font-family: var(--font-body);
     display: flex;
@@ -33,18 +38,22 @@ body {
 
 /* ========== MAIN CONTAINER ========== */
 .app-container {
-    background: #ffffff;
+    /* Saya buat sedikit transparan (Glassmorphism) agar makin elegan menyatu dengan background! */
+    background: rgba(255, 255, 255, 0.93);
+    backdrop-filter: blur(8px); 
+    -webkit-backdrop-filter: blur(8px);
+    
     width: 100%;
     max-width: 480px;
     border-radius: 32px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
     overflow: hidden;
     padding: 40px 30px;
     position: relative;
-    margin-top: 10px;
+    
+    /* Ini kuncinya: Mendorong panel putih ke bawah agar mata burung hantu terlihat */
+    margin-top: 250px; 
 }
-
-.app-container.admin-mode { max-width: 800px; }
 
 /* ========== PANEL & TYPOGRAPHY ========== */
 .panel { display: none; animation: fadeIn 0.4s ease forwards; text-align: center; }
