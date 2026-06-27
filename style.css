@@ -19,7 +19,7 @@
 body {
     /* Menggunakan background gambar yang baru diupload */
     background-color: var(--bg-color);
-    background-image: url('/bg.png'); 
+    background-image: url('https://raw.githubusercontent.com/endief/absensidigitalsman1lemahabang/e8cdc501d1e389e7e59494e3f6d00e1d7ac22355/file_00000000fef07206b125a86368e6741c.png'); 
     background-size: cover;
     background-position: top center;
     background-attachment: fixed;
