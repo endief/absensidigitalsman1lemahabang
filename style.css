@@ -46,7 +46,7 @@ body {
     overflow: hidden;
     padding: 40px 30px;
     position: relative;
-    margin-top: 200px; 
+    margin-top: 150px; 
 }
 
 .panel { display: none; animation: fadeIn 0.4s ease forwards; text-align: center; }
