@@ -1,4 +1,3 @@
-// LOADING/SUCCESS/CONFIRM
 const PremiumAlert = {
     init() {
         if (document.getElementById('premium-overlay')) return;
@@ -40,8 +39,7 @@ const PremiumAlert = {
         
         document.getElementById('p-title').innerText = title || 'Memproses...';
         document.getElementById('p-text').innerText = text || 'Mohon tunggu sebentar';
-        
-        // Kunci mati tampilan tombol
+     
         actions.classList.remove('show');
         actions.style.display = 'none'; 
 
@@ -68,7 +66,6 @@ const PremiumAlert = {
             btnConfirm.innerText = confirmText;
             btnConfirm.className = isOrangeColor ? 'p-btn p-btn-confirm orange' : 'p-btn p-btn-confirm';
 
-            // Tampilkan tombol dengan mulus
             actions.style.display = 'flex';
             setTimeout(() => actions.classList.add('show'), 10);
             overlay.classList.add('show');
@@ -152,13 +149,10 @@ const PremiumAlert = {
     }
 };
 
-// ==== FUNGSI PENGGANTI YANG LAMA ====
 function showCustomLoading(title, text) {
     PremiumAlert.showLoading(title, text);
 }
 
-
-// ==== FUNGSI TOGGLE PASSWORD MATA ====
 function togglePassword(inputId, iconDiv) {
     const input = document.getElementById(inputId);
     const eyeOpen = iconDiv.querySelector('.eye-open');
@@ -175,7 +169,6 @@ function togglePassword(inputId, iconDiv) {
     }
 }
 
-// ==== KONFIGURASI FIREBASE ====
 const firebaseConfig = {
     apiKey: "AIzaSyAIKGbTo0VPDP52YXzBcbC6BvPjT_KUv9M",
     authDomain: "absensidigitalsman1lemahabang.firebaseapp.com",
@@ -187,18 +180,15 @@ const firebaseConfig = {
 };
 firebase.initializeApp(firebaseConfig);
 
-// ==== KONFIGURASI SUPABASE (STORAGE) ====
 const supabaseUrl = 'https://hwljckozqobryksiliip.supabase.co';
 const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh3bGpja296cW9icnlrc2lsaWlwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzczMjIyMTQsImV4cCI6MjA5Mjg5ODIxNH0.HnUA_iF-OP38YjqK4laPLbpkbfDTiVuG189vJoIprn0';
 const supabaseClient = supabase.createClient(supabaseUrl, supabaseAnonKey);
 
-// ==== FUNGSI PEMBERSIH NAMA UNTUK FIREBASE ====
 function sanitizeKey(nama) {
     if(!nama) return "unknown";
     return nama.replace(/[.#$\[\]]/g, '_'); 
 }
 
-// ==== DATA SISWA PER KELAS ====
 let daftarNamaPerKelas = {};
 firebase.database().ref('siswa').on('value', (snapshot) => {
     daftarNamaPerKelas = snapshot.val() || {};
@@ -210,7 +200,6 @@ let dbRekapBulanan = { kelas: {}, siswa: {} };
 let streamKamera = null;
 let currentUser = null; 
 
-// SVG Icon Modern untuk Tabel Status
 const iconCheckSVG = `<svg class="anim-check" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
 const iconCrossSVG = `<svg class="anim-cross" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`;
 
@@ -220,7 +209,6 @@ function getStatusBadge(status) {
     return `<span class="badge-status badge-belum">Belum Absen</span>`;
 }
 
-// ==== LISTENER REAL‑TIME FIREBASE ====
 function initFirebaseListeners() {
     firebase.database().ref('absensi').on('value', (snapshot) => {
         const val = snapshot.val();
@@ -247,7 +235,6 @@ function initFirebaseListeners() {
 }
 initFirebaseListeners();
 
-// ==== KONFIGURASI GEOFENCING ====
 const KANTOR_LAT = -6.830280;
 const KANTOR_LON = 108.621137;
 const BATAS_JARAK_METER = 65; 
@@ -289,7 +276,6 @@ function refreshActiveUI() {
     if (document.getElementById('modal-peringkat-siswa-kelas').classList.contains('show')) renderPeringkatSiswaKelas();
 }
 
-// ==== FUNGSI LOGIN UMUM ====
 async function loginUmum() {
     const user = document.getElementById('admin-user').value.trim();
     const pass = document.getElementById('admin-pass').value.trim();
@@ -329,7 +315,6 @@ function logoutUmum() {
     switchPanel('panel-awal', false);
 }
 
-// ==== ADMIN UTAMA: KELOLA ADMIN KELAS ====
 function bukaModalKelolaAdminKelas() {
     openModal('modal-kelola-admin');
     renderDaftarAdminKelas();
@@ -394,7 +379,6 @@ async function hapusAdminKelas(username) {
     }
 }
 
-// ==== ADMIN UTAMA: TABEL ====
 function renderTabelAdmin() {
     const tbody = document.getElementById('tbody-rekap');
     tbody.innerHTML = "";
@@ -469,7 +453,6 @@ function downloadExcel() {
     XLSX.writeFile(workbook, "Rekap_Absensi.xlsx");
 }
 
-// ==== LOGIKA TUTUP ABSENSI & AUTO ALPHA ====
 async function toggleStatusAbsensi() {
     const ref = firebase.database().ref('settings/status_absen');
     const snapshot = await ref.once('value');
@@ -549,7 +532,6 @@ async function cekDanBukaAbsen() {
     else switchPanel('panel-absen');
 }
 
-// ==== ADMIN KELAS: TABEL & AKSI ====
 function renderTabelKelas() {
     const tbody = document.getElementById('tbody-rekap-kelas');
     const kelas = currentUser.kelas;
@@ -598,7 +580,6 @@ function downloadExcelKelas() {
     XLSX.writeFile(workbook, `Rekap_Absensi_${kelas}.xlsx`);
 }
 
-// ==== MODAL KEHADIRAN ADMIN UTAMA ====
 function bukaModalKehadiran() {
     openModal('modal-kehadiran');
     document.getElementById('filter-admin-kelas-val').value = ""; document.getElementById('teks-admin-kelas').innerText = "Pilih Kelas...";
@@ -657,7 +638,6 @@ function renderTabelKehadiran() {
     });
 }
 
-// ==== MODAL KEHADIRAN ADMIN KELAS ====
 function bukaModalKehadiranKelas() {
     openModal('modal-kehadiran-kelas');
     document.getElementById('filter-kelas-hari-val').value = ""; document.getElementById('teks-kelas-hari').innerText = "Pilih Hari...";
@@ -697,7 +677,6 @@ function renderTabelKehadiranKelas() {
     });
 }
 
-// ==== FITUR PERINGKAT ====
 function bukaModalPeringkatKelas() { openModal('modal-peringkat-kelas'); renderPeringkatKelas(); }
 
 function renderPeringkatKelas() {
@@ -786,7 +765,6 @@ function renderPeringkatSiswaKelas() {
 
 function lihatFotoPreview(url) { document.getElementById('preview-image-src').src = url; openModal('modal-preview-foto'); }
 
-// ==== PANEL ABSEN SISWA ====
 function generateKelasList() {
     const container = document.getElementById('list-kelas-container');
     container.innerHTML = "";
@@ -841,7 +819,6 @@ function renderNama(filterText = "") {
 }
 function filterNama() { renderNama(document.getElementById('search-nama').value); }
 
-// ==== KAMERA ====
 async function mulaiKamera() {
     try {
         streamKamera = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
@@ -872,7 +849,6 @@ function dataURLtoBlob(dataurl) {
     return new Blob([u8arr], { type: mime });
 }
 
-// ==== KIRIM ABSEN ====
 async function kirimAbsen() {
     const kelas = document.getElementById('kelas').value; const hari = document.getElementById('hari').value; const nama = document.getElementById('nama-terpilih').value;
     const status = 'Hadir'; const keterangan = "-";
@@ -915,7 +891,6 @@ async function hapusFileDariSupabase(filePath) {
     try { const { error } = await supabaseClient.storage.from('foto-absensi').remove([filePath]); if (error) console.warn('Gagal hapus file:', error); } catch (err) { console.warn('Error hapus file:', err); }
 }
 
-// ==== NAVIGASI PANEL ====
 function switchPanel(panelId, isAdminPanel = false) {
     const currentActive = document.querySelector('.panel.active'); const mainContainer = document.getElementById('main-container');
     if (isAdminPanel) mainContainer.classList.add('admin-mode'); else mainContainer.classList.remove('admin-mode');
@@ -940,10 +915,6 @@ function closeModal(id) { document.getElementById(id).classList.remove('show'); 
 
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
 renderNama();
-
-// ==========================================
-// ==== FITUR LOGIN SIDIK JARI (WEBAUTHN) ====
-// ==========================================
 
 async function daftarkanSidikJari() {
     if (!window.PublicKeyCredential) {
