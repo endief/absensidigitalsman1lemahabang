@@ -19,7 +19,7 @@
 body {
     /* Menggunakan background gambar yang baru diupload */
     background-color: var(--bg-color);
-    background-image: url('https://raw.githubusercontent.com/endief/absensidigitalsman1lemahabang/e8cdc501d1e389e7e59494e3f6d00e1d7ac22355/file_00000000fef07206b125a86368e6741c.png'); 
+    background-image: url('https://raw.githubusercontent.com/endief/absensidigitalsman1lemahabang/03484c85e6b08a7ed5c04d07780d4e834495fca4/bgabsensi.png'); 
     background-size: cover;
     background-position: top center;
     background-attachment: fixed;
@@ -52,7 +52,7 @@ body {
     position: relative;
     
     /* Ini kuncinya: Mendorong panel putih ke bawah agar mata burung hantu terlihat */
-    margin-top: 220px; 
+    margin-top: 215px; 
 }
 
 /* ========== PANEL & TYPOGRAPHY ========== */
